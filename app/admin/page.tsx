@@ -3,40 +3,72 @@
 import { useEffect, useState } from "react";
 
 export default function AdminPage() {
+  const [password, setPassword] = useState("");
+  const [authorized, setAuthorized] = useState(false);
   const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("applications") || "[]");
-    setData(saved);
-  }, []);
+  async function login() {
+    setLoading(true);
 
-  function clearData() {
-    if (confirm("Delete all applications?")) {
-      localStorage.removeItem("applications");
-      setData([]);
+    const res = await fetch("/api/applications", {
+      headers: {
+        "x-admin-password": password,
+      },
+    });
+
+    setLoading(false);
+
+    if (!res.ok) {
+      alert("Wrong password");
+      return;
     }
+
+    const result = await res.json();
+
+    setData(result);
+    setAuthorized(true);
+  }
+
+  if (!authorized) {
+    return (
+      <main style={mainStyle}>
+        <div style={loginBoxStyle}>
+          <h1 style={{ color: "lime" }}>Admin Login</h1>
+
+          <input
+            type="password"
+            placeholder="Admin Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={inputStyle}
+          />
+
+          <button onClick={login} style={buttonStyle}>
+            {loading ? "Loading..." : "Login"}
+          </button>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main style={mainStyle}>
-      <h1 style={titleStyle}>Admin Page</h1>
-      <p style={{ color: "gray" }}>Migration application list</p>
-
-      <button onClick={clearData} style={deleteButtonStyle}>
-        Delete All
-      </button>
+      <h1 style={titleStyle}>Applications</h1>
 
       <div style={listStyle}>
-        {data.length === 0 && <p>No applications yet.</p>}
-
         {data.map((item, index) => (
           <div key={index} style={cardStyle}>
             <h2 style={{ color: "lime" }}>{item.name}</h2>
+
             <p>Server: {item.server}</p>
             <p>Power: {item.power}</p>
             <p>Alliance: {item.alliance}</p>
             <p>Message: {item.message}</p>
-            <p style={{ color: "gray" }}>{item.date}</p>
+
+            <p style={{ color: "gray", marginTop: "10px" }}>
+              {new Date(item.created_at).toLocaleString()}
+            </p>
           </div>
         ))}
       </div>
@@ -48,23 +80,21 @@ const mainStyle: React.CSSProperties = {
   minHeight: "100vh",
   backgroundColor: "black",
   color: "white",
-  fontFamily: "Arial",
   padding: "30px",
+  fontFamily: "Arial",
+};
+
+const loginBoxStyle: React.CSSProperties = {
+  maxWidth: "400px",
+  margin: "120px auto",
+  display: "flex",
+  flexDirection: "column",
+  gap: "20px",
 };
 
 const titleStyle: React.CSSProperties = {
   color: "lime",
-  fontSize: "50px",
-};
-
-const deleteButtonStyle: React.CSSProperties = {
-  backgroundColor: "red",
-  color: "white",
-  padding: "12px 25px",
-  border: "none",
-  borderRadius: "10px",
   marginBottom: "30px",
-  cursor: "pointer",
 };
 
 const listStyle: React.CSSProperties = {
@@ -78,4 +108,23 @@ const cardStyle: React.CSSProperties = {
   border: "1px solid lime",
   borderRadius: "15px",
   padding: "20px",
+};
+
+const inputStyle: React.CSSProperties = {
+  padding: "16px",
+  borderRadius: "10px",
+  border: "1px solid gray",
+  backgroundColor: "#111",
+  color: "white",
+  fontSize: "18px",
+};
+
+const buttonStyle: React.CSSProperties = {
+  backgroundColor: "lime",
+  color: "black",
+  padding: "16px",
+  border: "none",
+  borderRadius: "10px",
+  fontWeight: "bold",
+  cursor: "pointer",
 };
