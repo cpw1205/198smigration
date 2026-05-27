@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const password = req.headers.get("x-admin-password");
 
-  if (password !== process.env.ADMIN_PASSWORD) {
+  if (password !== process."1234") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
