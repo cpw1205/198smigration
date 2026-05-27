@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 import { Pool } from "pg";
 
 const pool = new Pool({
-  connectionString: process.env.STORAGE_URL,
+  connectionString:
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL ||
+    process.env.STORAGE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 async function initTable() {
@@ -23,7 +30,6 @@ export async function POST(req: Request) {
   await initTable();
 
   const body = await req.json();
-
   const { name, server, power, alliance, message } = body;
 
   await pool.query(
@@ -35,27 +41,23 @@ export async function POST(req: Request) {
     [name, server, power, alliance, message]
   );
 
-  return NextResponse.json({
-    success: true,
-  });
+  return NextResponse.json({ success: true });
 }
 
 export async function GET(req: Request) {
   const password = req.headers.get("x-admin-password");
 
   if (password !== "1234") {
-    return NextResponse.json({
-      error: "Wrong password",
-    });
+    return NextResponse.json(
+      { error: "Wrong password" },
+      { status: 401 }
+    );
   }
 
   await initTable();
 
   const result = await pool.query(
-    `
-    SELECT * FROM applications
-    ORDER BY created_at DESC
-    `
+    `SELECT * FROM applications ORDER BY created_at DESC`
   );
 
   return NextResponse.json(result.rows);
