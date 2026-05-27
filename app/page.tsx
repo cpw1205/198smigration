@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const [form, setForm] = useState({
@@ -11,16 +12,42 @@ export default function Home() {
     message: "",
   });
 
-  function handleSubmit(e: React.FormEvent) {
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const oldData = JSON.parse(localStorage.getItem("applications") || "[]");
-    const newData = {
-      ...form,
-      date: new Date().toLocaleString(),
-    };
+    setLoading(true);
 
-    localStorage.setItem("applications", JSON.stringify([...oldData, newData]));
+    const { error } = await supabase
+      .from("applications")
+      .insert([
+        {
+          name: form.name,
+          server: form.server,
+          power: form.power,
+          alliance: form.alliance,
+          message: form.message,
+        },
+      ]);
+
+    setLoading(false);
+
+    console.log(error);
+
+    if (error) {
+      alert("Submission failed. Please try again.");
+      return;
+    }
 
     alert("Application submitted successfully!");
 
@@ -34,179 +61,238 @@ export default function Home() {
   }
 
   return (
-    <main style={mainStyle}>
-      <section style={heroStyle}>
-        <h1 style={titleStyle}>198 Migration</h1>
-        <p style={subTitleStyle}>
-          Welcome to the official 198 server migration website.
+    <main style={styles.main}>
+      <section style={styles.hero}>
+        <h1 style={styles.title}>SERVER 198 MIGRATION</h1>
+
+        <p style={styles.subtitle}>
+          Welcome to the official Server 198 migration website.
           <br />
-          Join our warriors and prepare for the next SVS.
+          Join our warriors and prepare for the next SVS battle.
         </p>
+
+        <a href="#apply" style={styles.button}>
+          APPLY NOW
+        </a>
       </section>
 
-      <section style={cardWrapStyle}>
-        <InfoCard title="Top Alliance" text="ETR Alliance" />
-        <InfoCard title="Server Goal" text="Win every SVS battle" />
-        <InfoCard title="Recruiting" text="Active fighters Lv30+" />
+      <section style={styles.section}>
+        <h2 style={styles.sectionTitle}>ABOUT SERVER 198</h2>
+
+        <p style={styles.text}>
+          Server 198 is recruiting active fighters and loyal alliances.
+          <br />
+          We focus on teamwork, SVS victory, event coordination,
+          and long-term growth.
+        </p>
+
+        <div style={styles.infoBox}>
+          <div style={styles.card}>
+            <h3>TOP ALLIANCES</h3>
+            <p>ETR / RIS3 / 0KK / PTHD</p>
+          </div>
+
+          <div style={styles.card}>
+            <h3>SVS FOCUS</h3>
+            <p>Organized strategy & rally coordination</p>
+          </div>
+
+          <div style={styles.card}>
+            <h3>ACTIVE PLAYERS</h3>
+            <p>International community & daily activity</p>
+          </div>
+        </div>
       </section>
 
-      <section style={formBoxStyle}>
-        <h2 style={formTitleStyle}>Migration Application</h2>
+      <section id="apply" style={styles.sectionDark}>
+        <h2 style={styles.sectionTitle}>MIGRATION APPLICATION</h2>
 
-        <form onSubmit={handleSubmit} style={formStyle}>
+        <form onSubmit={handleSubmit} style={styles.form}>
           <input
-            placeholder="Your Name"
+            type="text"
+            name="name"
+            placeholder="Nickname"
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            style={inputStyle}
+            onChange={handleChange}
+            style={styles.input}
             required
           />
 
           <input
+            type="text"
+            name="server"
             placeholder="Current Server"
             value={form.server}
-            onChange={(e) => setForm({ ...form, server: e.target.value })}
-            style={inputStyle}
+            onChange={handleChange}
+            style={styles.input}
             required
           />
 
           <input
-            placeholder="Power Level"
+            type="text"
+            name="power"
+            placeholder="Power"
             value={form.power}
-            onChange={(e) => setForm({ ...form, power: e.target.value })}
-            style={inputStyle}
+            onChange={handleChange}
+            style={styles.input}
             required
           />
 
           <input
-            placeholder="Alliance"
+            type="text"
+            name="alliance"
+            placeholder="Current Alliance"
             value={form.alliance}
-            onChange={(e) => setForm({ ...form, alliance: e.target.value })}
-            style={inputStyle}
+            onChange={handleChange}
+            style={styles.input}
           />
 
           <textarea
-            placeholder="Message"
+            name="message"
+            placeholder="Introduce yourself"
             value={form.message}
-            onChange={(e) => setForm({ ...form, message: e.target.value })}
-            rows={5}
-            style={inputStyle}
+            onChange={handleChange}
+            style={styles.textarea}
           />
 
-          <button type="submit" style={buttonStyle}>
-            Apply Now
+          <button
+            type="submit"
+            style={styles.submitButton}
+            disabled={loading}
+          >
+            {loading ? "SUBMITTING..." : "SUBMIT APPLICATION"}
           </button>
         </form>
-
-        <p style={adminTextStyle}>
-          Admin page: <a href="/admin" style={{ color: "lime" }}>/admin</a>
-        </p>
       </section>
 
-      <footer style={footerStyle}>© 2026 198 Migration</footer>
+      <footer style={styles.footer}>
+        © 2026 SERVER 198 MIGRATION — ALL RIGHTS RESERVED
+      </footer>
     </main>
   );
 }
 
-function InfoCard({ title, text }: { title: string; text: string }) {
-  return (
-    <div style={cardStyle}>
-      <h2 style={{ color: "lime" }}>{title}</h2>
-      <p>{text}</p>
-    </div>
-  );
-}
+const styles: any = {
+  main: {
+    backgroundColor: "#0b0b0b",
+    color: "white",
+    minHeight: "100vh",
+    fontFamily: "Arial",
+  },
 
-const mainStyle: React.CSSProperties = {
-  minHeight: "100vh",
-  backgroundColor: "black",
-  color: "white",
-  fontFamily: "Arial",
-  padding: "30px",
-};
+  hero: {
+    textAlign: "center",
+    padding: "120px 20px",
+    background: "linear-gradient(to bottom, #111111, #1b1b1b)",
+  },
 
-const heroStyle: React.CSSProperties = {
-  textAlign: "center",
-  marginBottom: "50px",
-};
+  title: {
+    fontSize: "64px",
+    fontWeight: "bold",
+    marginBottom: "20px",
+    color: "#ffcc00",
+  },
 
-const titleStyle: React.CSSProperties = {
-  fontSize: "60px",
-  color: "lime",
-};
+  subtitle: {
+    fontSize: "20px",
+    lineHeight: "1.8",
+    color: "#cccccc",
+    marginBottom: "40px",
+  },
 
-const subTitleStyle: React.CSSProperties = {
-  fontSize: "22px",
-  color: "lightgray",
-  lineHeight: "1.6",
-};
+  button: {
+    backgroundColor: "#ffcc00",
+    color: "#000",
+    padding: "15px 35px",
+    borderRadius: "10px",
+    textDecoration: "none",
+    fontWeight: "bold",
+    fontSize: "18px",
+  },
 
-const cardWrapStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "center",
-  gap: "25px",
-  flexWrap: "wrap",
-  marginBottom: "60px",
-};
+  section: {
+    padding: "80px 20px",
+    maxWidth: "1200px",
+    margin: "0 auto",
+  },
 
-const cardStyle: React.CSSProperties = {
-  backgroundColor: "#111",
-  padding: "25px",
-  borderRadius: "18px",
-  border: "1px solid lime",
-  width: "280px",
-  textAlign: "center",
-};
+  sectionDark: {
+    padding: "80px 20px",
+    backgroundColor: "#151515",
+  },
 
-const formBoxStyle: React.CSSProperties = {
-  maxWidth: "700px",
-  margin: "0 auto",
-  backgroundColor: "#111",
-  padding: "35px",
-  borderRadius: "20px",
-  border: "1px solid lime",
-};
+  sectionTitle: {
+    textAlign: "center",
+    fontSize: "40px",
+    marginBottom: "50px",
+    color: "#ffcc00",
+  },
 
-const formTitleStyle: React.CSSProperties = {
-  textAlign: "center",
-  color: "lime",
-  fontSize: "38px",
-};
+  text: {
+    textAlign: "center",
+    color: "#cccccc",
+    lineHeight: "1.8",
+    fontSize: "18px",
+  },
 
-const formStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "18px",
-};
+  infoBox: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "20px",
+    marginTop: "50px",
+  },
 
-const inputStyle: React.CSSProperties = {
-  padding: "16px",
-  borderRadius: "10px",
-  border: "1px solid gray",
-  backgroundColor: "#222",
-  color: "white",
-  fontSize: "18px",
-};
+  card: {
+    backgroundColor: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "15px",
+    textAlign: "center",
+    border: "1px solid #333",
+  },
 
-const buttonStyle: React.CSSProperties = {
-  backgroundColor: "lime",
-  color: "black",
-  padding: "18px",
-  border: "none",
-  borderRadius: "12px",
-  fontSize: "20px",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
+  form: {
+    maxWidth: "700px",
+    margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+  },
 
-const adminTextStyle: React.CSSProperties = {
-  textAlign: "center",
-  marginTop: "25px",
-  color: "gray",
-};
+  input: {
+    padding: "15px",
+    borderRadius: "10px",
+    border: "1px solid #333",
+    backgroundColor: "#222",
+    color: "white",
+    fontSize: "16px",
+  },
 
-const footerStyle: React.CSSProperties = {
-  textAlign: "center",
-  marginTop: "70px",
-  color: "gray",
+  textarea: {
+    padding: "15px",
+    borderRadius: "10px",
+    border: "1px solid #333",
+    backgroundColor: "#222",
+    color: "white",
+    minHeight: "140px",
+    fontSize: "16px",
+  },
+
+  submitButton: {
+    backgroundColor: "#ffcc00",
+    color: "#000",
+    padding: "16px",
+    border: "none",
+    borderRadius: "10px",
+    fontWeight: "bold",
+    fontSize: "18px",
+    cursor: "pointer",
+  },
+
+  footer: {
+    textAlign: "center",
+    padding: "40px",
+    color: "#777",
+    borderTop: "1px solid #222",
+    marginTop: "60px",
+  },
 };
