@@ -243,7 +243,7 @@ textBlock: {
   marginTop:
     typeof window !== "undefined" &&
     window.innerWidth <= 768
-      ? "620px"
+      ? "420px"
       : "820px",
 },
   season: {
