@@ -62,113 +62,19 @@ export default function Home() {
   }
 
   return (
-    <main style={styles.main}>
-      <section style={styles.hero}>
-        <div style={styles.overlay}>
-          <div style={styles.textBlock}>
-            <h1 style={styles.season}>SEASON 4</h1>
+    <main className="main">
+      <section className="hero"></section>
 
-            <h2 style={styles.mainTitle}>
-              SERVER 198
-              <br />
-              MIGRATION
-            </h2>
+      <section id="apply" className="applySection">
+        <h2>MIGRATION APPLICATION</h2>
 
-            <p style={styles.subtitle}>
-              Dinosaurs rise again.
-              <br />
-              Tanks prepare for total war.
-              <br />
-              Join the strongest battlefield.
-            </p>
+        <form onSubmit={handleSubmit} className="form">
+          <input type="text" name="name" placeholder="Nickname" value={form.name} onChange={handleChange} required />
+          <input type="text" name="server" placeholder="Current Server" value={form.server} onChange={handleChange} required />
+          <input type="text" name="power" placeholder="Power" value={form.power} onChange={handleChange} required />
+          <input type="text" name="alliance" placeholder="Current Alliance" value={form.alliance} onChange={handleChange} />
 
-            <a href="#apply" style={styles.button}>
-              APPLY NOW
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section style={styles.section}>
-        <h2 style={styles.sectionTitle}>THE WAR BEGINS</h2>
-
-        <p style={styles.text}>
-          Server 198 prepares for the arrival of Season 4.
-          <br />
-          Massive dinosaur warfare, organized tank battles,
-          and elite alliances await.
-        </p>
-
-        <div style={styles.infoBox}>
-          <div style={styles.card}>
-            <h3>TOP ALLIANCES</h3>
-            <p>ETR / RIS3 / 0KK / PTHD</p>
-          </div>
-
-          <div style={styles.card}>
-            <h3>SEASON 4</h3>
-            <p>Dinosaur battlefield & tank warfare</p>
-          </div>
-
-          <div style={styles.card}>
-            <h3>GLOBAL PLAYERS</h3>
-            <p>International active community</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="apply" style={styles.sectionDark}>
-        <h2 style={styles.sectionTitle}>
-          MIGRATION APPLICATION
-        </h2>
-
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Nickname"
-            value={form.name}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-
-          <input
-            type="text"
-            name="server"
-            placeholder="Current Server"
-            value={form.server}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-
-          <input
-            type="text"
-            name="power"
-            placeholder="Power"
-            value={form.power}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-
-          <input
-            type="text"
-            name="alliance"
-            placeholder="Current Alliance"
-            value={form.alliance}
-            onChange={handleChange}
-            style={styles.input}
-          />
-
-          <select
-            name="migration_grade"
-            value={form.migration_grade}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          >
+          <select name="migration_grade" value={form.migration_grade} onChange={handleChange} required>
             <option value="">Select Migration Grade</option>
             <option value="Elite">Elite (특급)</option>
             <option value="Advanced">Advanced (고급)</option>
@@ -176,198 +82,213 @@ export default function Home() {
             <option value="Regular">Regular (일반)</option>
           </select>
 
-          <textarea
-            name="message"
-            placeholder="Introduce yourself"
-            value={form.message}
-            onChange={handleChange}
-            style={styles.textarea}
-          />
+          <textarea name="message" placeholder="Introduce yourself" value={form.message} onChange={handleChange} />
 
-          <button
-            type="submit"
-            style={styles.submitButton}
-            disabled={loading}
-          >
-            {loading
-              ? "SUBMITTING..."
-              : "SUBMIT APPLICATION"}
+          <button type="submit" disabled={loading}>
+            {loading ? "SUBMITTING..." : "SUBMIT APPLICATION"}
           </button>
         </form>
       </section>
 
-      <footer style={styles.footer}>
-        © 2026 SERVER 198 MIGRATION
-      </footer>
+      <section className="infoSection">
+        <h2>WHY SERVER 198?</h2>
+
+        <p className="mainText">
+          Server 198 is preparing for one of the most competitive Season 4 battlefields.
+          <br />
+          Strong alliances, organized leadership, active international players,
+          and coordinated warfare systems await.
+        </p>
+
+        <div className="infoBox">
+          <div className="card">
+            <h3>TOP ALLIANCES</h3>
+            <p>ETR / RIS3 / 0KK / PTHD</p>
+            <span>Multiple powerful alliances with experienced rally leaders and active fighters.</span>
+          </div>
+
+          <div className="card">
+            <h3>SVS ORGANIZATION</h3>
+            <p>Organized battle plans, capital rotation, rally coordination, and tactical warfare.</p>
+            <span>Every alliance has battlefield roles and strategic objectives during SVS.</span>
+          </div>
+
+          <div className="card">
+            <h3>GLOBAL COMMUNITY</h3>
+            <p>International active players from multiple regions.</p>
+            <span>Daily activity, fast communication, and cooperative gameplay environment.</span>
+          </div>
+
+          <div className="card">
+            <h3>SEASON 4 PREPARATION</h3>
+            <p>Preparing for dinosaur battlefield warfare and large-scale combat.</p>
+            <span>Recruitment focused on active, long-term competitive players.</span>
+          </div>
+        </div>
+      </section>
+
+      <footer>© 2026 SERVER 198 MIGRATION</footer>
+
+      <style jsx>{`
+        .main {
+          background: #050505;
+          color: white;
+          min-height: 100vh;
+          font-family: Arial, sans-serif;
+          overflow-x: hidden;
+        }
+
+        .hero {
+          width: 100%;
+          height: 820px;
+          background-image: url("/season4-bg.png");
+          background-size: contain;
+          background-position: top center;
+          background-repeat: no-repeat;
+          background-color: #050505;
+        }
+
+        .applySection {
+          padding: 20px 20px 90px;
+          background: #101010;
+        }
+
+        h2 {
+          text-align: center;
+          font-size: 46px;
+          margin-bottom: 45px;
+          color: #ffd400;
+        }
+
+        .form {
+          max-width: 720px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        input,
+        select,
+        textarea {
+          padding: 17px;
+          border-radius: 12px;
+          border: 1px solid #333;
+          background: #1b1b1b;
+          color: white;
+          font-size: 16px;
+        }
+
+        textarea {
+          min-height: 160px;
+        }
+
+        button {
+          background: #ffd400;
+          color: #000;
+          padding: 17px;
+          border: none;
+          border-radius: 12px;
+          font-weight: bold;
+          font-size: 17px;
+          cursor: pointer;
+          box-shadow: 0 0 18px rgba(255, 212, 0, 0.4);
+        }
+
+        .infoSection {
+          padding: 100px 20px;
+          max-width: 1300px;
+          margin: 0 auto;
+        }
+
+        .mainText {
+          text-align: center;
+          color: #d0d0d0;
+          line-height: 1.9;
+          font-size: 21px;
+          max-width: 900px;
+          margin: 0 auto 70px;
+        }
+
+        .infoBox {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 28px;
+        }
+
+        .card {
+          background: #161616;
+          padding: 38px;
+          border-radius: 18px;
+          border: 1px solid #333;
+          box-shadow: 0 0 18px rgba(255, 212, 0, 0.12);
+        }
+
+        .card h3 {
+          color: #ffd400;
+          margin-bottom: 18px;
+          font-size: 24px;
+        }
+
+        .card p {
+          font-size: 18px;
+          line-height: 1.8;
+          margin-bottom: 20px;
+          color: white;
+        }
+
+        .card span {
+          color: #bbbbbb;
+          line-height: 1.7;
+          font-size: 15px;
+        }
+
+        footer {
+          text-align: center;
+          padding: 45px;
+          color: #777;
+          border-top: 1px solid #222;
+        }
+
+        @media (max-width: 768px) {
+          .hero {
+            height: 260px;
+            background-size: contain;
+            background-position: top center;
+          }
+
+          .applySection {
+            padding: 25px 16px 70px;
+          }
+
+          h2 {
+            font-size: 30px;
+            margin-bottom: 30px;
+          }
+
+          .infoSection {
+            padding: 70px 16px;
+          }
+
+          .mainText {
+            font-size: 17px;
+            line-height: 1.8;
+            margin-bottom: 50px;
+          }
+
+          .card {
+            padding: 28px;
+          }
+
+          .card h3 {
+            font-size: 21px;
+          }
+
+          .card p {
+            font-size: 16px;
+          }
+        }
+      `}</style>
     </main>
   );
 }
-
-const styles: any = {
-  main: {
-    backgroundColor: "#050505",
-    color: "white",
-    minHeight: "100vh",
-    fontFamily: "Arial",
-    overflowX: "hidden",
-  },
-
-  hero: {
-    minHeight: "100vh",
-
-    // 여기 수정됨
-    // 배경 더 밝고 선명하게
-    backgroundImage:
-      "linear-gradient(rgba(0,0,0,0.02), rgba(0,0,0,0.45)), url('/season4-bg.png')",
-
-    backgroundSize: "min(100%, 1250px) auto",
-    backgroundPosition: "top center",
-    backgroundRepeat: "no-repeat",
-    backgroundColor: "#050505",
-
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    textAlign: "center",
-
-    padding: "0px 20px 100px",
-  },
-
-  overlay: {
-    maxWidth: "900px",
-    width: "100%",
-  },
-
-  // 텍스트 아래로
-textBlock: {
-  marginTop:
-    typeof window !== "undefined" &&
-    window.innerWidth <= 768
-      ? "420px"
-      : "820px",
-},
-  season: {
-    fontSize: "clamp(24px, 5vw, 42px)",
-    color: "#ffd400",
-    letterSpacing: "4px",
-    marginBottom: "10px",
-    textShadow: "0 0 18px rgba(255,212,0,0.9)",
-  },
-
-  mainTitle: {
-    fontSize: "clamp(42px, 10vw, 90px)",
-    fontWeight: "bold",
-    marginBottom: "20px",
-    color: "white",
-    lineHeight: "1.08",
-    textShadow: "0 0 20px rgba(0,0,0,0.85)",
-  },
-
-  subtitle: {
-    fontSize: "clamp(16px, 4vw, 24px)",
-    lineHeight: "1.7",
-    color: "#f0f0f0",
-    marginBottom: "35px",
-    textShadow: "0 0 8px rgba(0,0,0,0.8)",
-  },
-
-  button: {
-    backgroundColor: "#ffd400",
-    color: "#000",
-    padding: "12px 28px",
-    borderRadius: "10px",
-    textDecoration: "none",
-    fontWeight: "bold",
-    fontSize: "15px",
-    boxShadow: "0 0 25px rgba(255,212,0,0.7)",
-    display: "inline-block",
-  },
-
-  section: {
-    padding: "100px 20px",
-    maxWidth: "1200px",
-    margin: "0 auto",
-  },
-
-  sectionDark: {
-    padding: "100px 20px",
-    backgroundColor: "#101010",
-  },
-
-  sectionTitle: {
-    textAlign: "center",
-    fontSize: "clamp(32px, 6vw, 48px)",
-    marginBottom: "50px",
-    color: "#ffd400",
-  },
-
-  text: {
-    textAlign: "center",
-    color: "#d0d0d0",
-    lineHeight: "1.9",
-    fontSize: "clamp(17px, 3vw, 20px)",
-  },
-
-  infoBox: {
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: "25px",
-    marginTop: "60px",
-  },
-
-  card: {
-    backgroundColor: "#161616",
-    padding: "35px",
-    borderRadius: "18px",
-    textAlign: "center",
-    border: "1px solid #333",
-    boxShadow: "0 0 18px rgba(255,212,0,0.12)",
-  },
-
-  form: {
-    maxWidth: "700px",
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-  },
-
-  input: {
-    padding: "16px",
-    borderRadius: "12px",
-    border: "1px solid #333",
-    backgroundColor: "#1b1b1b",
-    color: "white",
-    fontSize: "16px",
-  },
-
-  textarea: {
-    padding: "16px",
-    borderRadius: "12px",
-    border: "1px solid #333",
-    backgroundColor: "#1b1b1b",
-    color: "white",
-    minHeight: "150px",
-    fontSize: "16px",
-  },
-
-  submitButton: {
-    backgroundColor: "#ffd400",
-    color: "#000",
-    padding: "16px",
-    border: "none",
-    borderRadius: "12px",
-    fontWeight: "bold",
-    fontSize: "17px",
-    cursor: "pointer",
-    boxShadow: "0 0 18px rgba(255,212,0,0.4)",
-  },
-
-  footer: {
-    textAlign: "center",
-    padding: "40px",
-    color: "#777",
-    borderTop: "1px solid #222",
-  },
-};
