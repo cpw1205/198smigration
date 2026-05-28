@@ -65,32 +65,32 @@ export default function Home() {
     <main style={styles.main}>
       <section style={styles.hero}>
         <div style={styles.overlay}>
-          <h1 style={styles.season}>SEASON 4</h1>
+          <div style={styles.textBlock}>
+            <h1 style={styles.season}>SEASON 4</h1>
 
-          <h2 style={styles.mainTitle}>
-            SERVER 198
-            <br />
-            MIGRATION
-          </h2>
+            <h2 style={styles.mainTitle}>
+              SERVER 198
+              <br />
+              MIGRATION
+            </h2>
 
-          <p style={styles.subtitle}>
-            Dinosaurs rise again.
-            <br />
-            Tanks prepare for total war.
-            <br />
-            Join the strongest battlefield.
-          </p>
+            <p style={styles.subtitle}>
+              Dinosaurs rise again.
+              <br />
+              Tanks prepare for total war.
+              <br />
+              Join the strongest battlefield.
+            </p>
 
-          <a href="#apply" style={styles.button}>
-            APPLY NOW
-          </a>
+            <a href="#apply" style={styles.button}>
+              APPLY NOW
+            </a>
+          </div>
         </div>
       </section>
 
       <section style={styles.section}>
-        <h2 style={styles.sectionTitle}>
-          THE WAR BEGINS
-        </h2>
+        <h2 style={styles.sectionTitle}>THE WAR BEGINS</h2>
 
         <p style={styles.text}>
           Server 198 prepares for the arrival of Season 4.
@@ -169,25 +169,11 @@ export default function Home() {
             style={styles.input}
             required
           >
-            <option value="">
-              Select Migration Grade
-            </option>
-
-            <option value="Elite">
-              Elite (특급)
-            </option>
-
-            <option value="Advanced">
-              Advanced (고급)
-            </option>
-
-            <option value="Medium">
-              Medium (중급)
-            </option>
-
-            <option value="Regular">
-              Regular (일반)
-            </option>
+            <option value="">Select Migration Grade</option>
+            <option value="Elite">Elite (특급)</option>
+            <option value="Advanced">Advanced (고급)</option>
+            <option value="Medium">Medium (중급)</option>
+            <option value="Regular">Regular (일반)</option>
           </select>
 
           <textarea
@@ -223,61 +209,75 @@ const styles: any = {
     color: "white",
     minHeight: "100vh",
     fontFamily: "Arial",
+    overflowX: "hidden",
   },
 
   hero: {
     minHeight: "100vh",
+
+    // 여기 수정됨
+    // 배경 더 밝고 선명하게
     backgroundImage:
-      "linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url('/season4-bg.png')",
-    backgroundSize: "contain",
+      "linear-gradient(rgba(0,0,0,0.02), rgba(0,0,0,0.45)), url('/season4-bg.png')",
+
+    backgroundSize: "min(100%, 1250px) auto",
     backgroundPosition: "top center",
     backgroundRepeat: "no-repeat",
     backgroundColor: "#050505",
+
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     textAlign: "center",
-    padding: "160px 20px 80px",
+
+    padding: "0px 20px 100px",
   },
 
   overlay: {
     maxWidth: "900px",
+    width: "100%",
+  },
+
+  // 텍스트 아래로
+  textBlock: {
+    marginTop: "820px",
   },
 
   season: {
-    fontSize: "42px",
-    color: "#ffcc00",
-    letterSpacing: "6px",
+    fontSize: "clamp(24px, 5vw, 42px)",
+    color: "#ffd400",
+    letterSpacing: "4px",
     marginBottom: "10px",
-    textShadow: "0 0 20px rgba(255,204,0,0.8)",
+    textShadow: "0 0 18px rgba(255,212,0,0.9)",
   },
 
   mainTitle: {
-    fontSize: "90px",
+    fontSize: "clamp(42px, 10vw, 90px)",
     fontWeight: "bold",
     marginBottom: "20px",
     color: "white",
-    lineHeight: "1.1",
-    textShadow: "0 0 25px rgba(0,0,0,0.9)",
+    lineHeight: "1.08",
+    textShadow: "0 0 20px rgba(0,0,0,0.85)",
   },
 
   subtitle: {
-    fontSize: "24px",
-    lineHeight: "1.8",
-    color: "#dddddd",
-    marginBottom: "50px",
-    textShadow: "0 0 10px rgba(0,0,0,0.8)",
+    fontSize: "clamp(16px, 4vw, 24px)",
+    lineHeight: "1.7",
+    color: "#f0f0f0",
+    marginBottom: "35px",
+    textShadow: "0 0 8px rgba(0,0,0,0.8)",
   },
 
   button: {
-    backgroundColor: "#ffcc00",
+    backgroundColor: "#ffd400",
     color: "#000",
-    padding: "18px 45px",
-    borderRadius: "12px",
+    padding: "12px 28px",
+    borderRadius: "10px",
     textDecoration: "none",
     fontWeight: "bold",
-    fontSize: "20px",
-    boxShadow: "0 0 20px rgba(255,204,0,0.5)",
+    fontSize: "15px",
+    boxShadow: "0 0 25px rgba(255,212,0,0.7)",
+    display: "inline-block",
   },
 
   section: {
@@ -293,16 +293,16 @@ const styles: any = {
 
   sectionTitle: {
     textAlign: "center",
-    fontSize: "48px",
+    fontSize: "clamp(32px, 6vw, 48px)",
     marginBottom: "50px",
-    color: "#ffcc00",
+    color: "#ffd400",
   },
 
   text: {
     textAlign: "center",
-    color: "#cccccc",
+    color: "#d0d0d0",
     lineHeight: "1.9",
-    fontSize: "20px",
+    fontSize: "clamp(17px, 3vw, 20px)",
   },
 
   infoBox: {
@@ -319,7 +319,7 @@ const styles: any = {
     borderRadius: "18px",
     textAlign: "center",
     border: "1px solid #333",
-    boxShadow: "0 0 15px rgba(255,204,0,0.1)",
+    boxShadow: "0 0 18px rgba(255,212,0,0.12)",
   },
 
   form: {
@@ -350,15 +350,15 @@ const styles: any = {
   },
 
   submitButton: {
-    backgroundColor: "#ffcc00",
+    backgroundColor: "#ffd400",
     color: "#000",
-    padding: "18px",
+    padding: "16px",
     border: "none",
     borderRadius: "12px",
     fontWeight: "bold",
-    fontSize: "18px",
+    fontSize: "17px",
     cursor: "pointer",
-    boxShadow: "0 0 15px rgba(255,204,0,0.3)",
+    boxShadow: "0 0 18px rgba(255,212,0,0.4)",
   },
 
   footer: {
