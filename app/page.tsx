@@ -9,13 +9,14 @@ export default function Home() {
     server: "",
     power: "",
     alliance: "",
+    migration_grade: "",
     message: "",
   });
 
   const [loading, setLoading] = useState(false);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
     setForm({
       ...form,
@@ -28,17 +29,16 @@ export default function Home() {
 
     setLoading(true);
 
-    const { error } = await supabase
-      .from("applications")
-      .insert([
-        {
-          name: form.name,
-          server: form.server,
-          power: form.power,
-          alliance: form.alliance,
-          message: form.message,
-        },
-      ]);
+    const { error } = await supabase.from("applications").insert([
+      {
+        name: form.name,
+        server: form.server,
+        power: form.power,
+        alliance: form.alliance,
+        migration_grade: form.migration_grade,
+        message: form.message,
+      },
+    ]);
 
     setLoading(false);
 
@@ -56,6 +56,7 @@ export default function Home() {
       server: "",
       power: "",
       alliance: "",
+      migration_grade: "",
       message: "",
     });
   }
@@ -147,6 +148,20 @@ export default function Home() {
             style={styles.input}
           />
 
+          <select
+            name="migration_grade"
+            value={form.migration_grade}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          >
+            <option value="">Select Migration Grade</option>
+            <option value="Elite">Elite (특급)</option>
+            <option value="Advanced">Advanced (고급)</option>
+            <option value="Medium">Medium (중급)</option>
+            <option value="Regular">Regular (일반)</option>
+          </select>
+
           <textarea
             name="message"
             placeholder="Introduce yourself"
@@ -155,11 +170,7 @@ export default function Home() {
             style={styles.textarea}
           />
 
-          <button
-            type="submit"
-            style={styles.submitButton}
-            disabled={loading}
-          >
+          <button type="submit" style={styles.submitButton} disabled={loading}>
             {loading ? "SUBMITTING..." : "SUBMIT APPLICATION"}
           </button>
         </form>
