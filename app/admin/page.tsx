@@ -1,6 +1,7 @@
 "use client";
+
 import { supabase } from "@/lib/supabase";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
@@ -30,6 +31,27 @@ export default function AdminPage() {
     setAuthorized(true);
   }
 
+  async function handleDelete(id: number) {
+    const ok = confirm("정말 이 신청정보를 삭제할까요?");
+
+    if (!ok) return;
+
+    const { error } = await supabase
+      .from("applications")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.log(error);
+      alert("Delete failed. Please try again.");
+      return;
+    }
+
+    setData((prev) => prev.filter((item) => item.id !== id));
+
+    alert("Deleted successfully.");
+  }
+
   if (!authorized) {
     return (
       <main style={mainStyle}>
@@ -57,18 +79,26 @@ export default function AdminPage() {
       <h1 style={titleStyle}>Applications</h1>
 
       <div style={listStyle}>
-        {data.map((item, index) => (
-          <div key={index} style={cardStyle}>
+        {data.map((item) => (
+          <div key={item.id} style={cardStyle}>
             <h2 style={{ color: "lime" }}>{item.name}</h2>
 
             <p>Server: {item.server}</p>
             <p>Power: {item.power}</p>
             <p>Alliance: {item.alliance}</p>
+            <p>Migration Grade: {item.migration_grade}</p>
             <p>Message: {item.message}</p>
 
             <p style={{ color: "gray", marginTop: "10px" }}>
               {new Date(item.created_at).toLocaleString()}
             </p>
+
+            <button
+              onClick={() => handleDelete(item.id)}
+              style={deleteButtonStyle}
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>
@@ -125,6 +155,17 @@ const buttonStyle: React.CSSProperties = {
   padding: "16px",
   border: "none",
   borderRadius: "10px",
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const deleteButtonStyle: React.CSSProperties = {
+  marginTop: "15px",
+  backgroundColor: "#ff3333",
+  color: "white",
+  padding: "10px 16px",
+  border: "none",
+  borderRadius: "8px",
   fontWeight: "bold",
   cursor: "pointer",
 };
