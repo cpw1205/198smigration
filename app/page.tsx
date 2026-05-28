@@ -16,7 +16,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
     setForm({
       ...form,
@@ -42,10 +44,8 @@ export default function Home() {
 
     setLoading(false);
 
-    console.log(error);
-
     if (error) {
-      alert("Submission failed. Please try again.");
+      alert("Submission failed.");
       return;
     }
 
@@ -64,27 +64,39 @@ export default function Home() {
   return (
     <main style={styles.main}>
       <section style={styles.hero}>
-        <h1 style={styles.title}>SERVER 198 MIGRATION</h1>
+        <div style={styles.overlay}>
+          <h1 style={styles.season}>SEASON 4</h1>
 
-        <p style={styles.subtitle}>
-          Welcome to the official Server 198 migration website.
-          <br />
-          Join our warriors and prepare for the next SVS battle.
-        </p>
+          <h2 style={styles.mainTitle}>
+            SERVER 198
+            <br />
+            MIGRATION
+          </h2>
 
-        <a href="#apply" style={styles.button}>
-          APPLY NOW
-        </a>
+          <p style={styles.subtitle}>
+            Dinosaurs rise again.
+            <br />
+            Tanks prepare for total war.
+            <br />
+            Join the strongest battlefield.
+          </p>
+
+          <a href="#apply" style={styles.button}>
+            APPLY NOW
+          </a>
+        </div>
       </section>
 
       <section style={styles.section}>
-        <h2 style={styles.sectionTitle}>ABOUT SERVER 198</h2>
+        <h2 style={styles.sectionTitle}>
+          THE WAR BEGINS
+        </h2>
 
         <p style={styles.text}>
-          Server 198 is recruiting active fighters and loyal alliances.
+          Server 198 prepares for the arrival of Season 4.
           <br />
-          We focus on teamwork, SVS victory, event coordination,
-          and long-term growth.
+          Massive dinosaur warfare, organized tank battles,
+          and elite alliances await.
         </p>
 
         <div style={styles.infoBox}>
@@ -94,19 +106,21 @@ export default function Home() {
           </div>
 
           <div style={styles.card}>
-            <h3>SVS FOCUS</h3>
-            <p>Organized strategy & rally coordination</p>
+            <h3>SEASON 4</h3>
+            <p>Dinosaur battlefield & tank warfare</p>
           </div>
 
           <div style={styles.card}>
-            <h3>ACTIVE PLAYERS</h3>
-            <p>International community & daily activity</p>
+            <h3>GLOBAL PLAYERS</h3>
+            <p>International active community</p>
           </div>
         </div>
       </section>
 
       <section id="apply" style={styles.sectionDark}>
-        <h2 style={styles.sectionTitle}>MIGRATION APPLICATION</h2>
+        <h2 style={styles.sectionTitle}>
+          MIGRATION APPLICATION
+        </h2>
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
@@ -155,11 +169,25 @@ export default function Home() {
             style={styles.input}
             required
           >
-            <option value="">Select Migration Grade</option>
-            <option value="Elite">Elite (특급)</option>
-            <option value="Advanced">Advanced (고급)</option>
-            <option value="Medium">Medium (중급)</option>
-            <option value="Regular">Regular (일반)</option>
+            <option value="">
+              Select Migration Grade
+            </option>
+
+            <option value="Elite">
+              Elite (특급)
+            </option>
+
+            <option value="Advanced">
+              Advanced (고급)
+            </option>
+
+            <option value="Medium">
+              Medium (중급)
+            </option>
+
+            <option value="Regular">
+              Regular (일반)
+            </option>
           </select>
 
           <textarea
@@ -170,14 +198,20 @@ export default function Home() {
             style={styles.textarea}
           />
 
-          <button type="submit" style={styles.submitButton} disabled={loading}>
-            {loading ? "SUBMITTING..." : "SUBMIT APPLICATION"}
+          <button
+            type="submit"
+            style={styles.submitButton}
+            disabled={loading}
+          >
+            {loading
+              ? "SUBMITTING..."
+              : "SUBMIT APPLICATION"}
           </button>
         </form>
       </section>
 
       <footer style={styles.footer}>
-        © 2026 SERVER 198 MIGRATION — ALL RIGHTS RESERVED
+        © 2026 SERVER 198 MIGRATION
       </footer>
     </main>
   );
@@ -185,56 +219,81 @@ export default function Home() {
 
 const styles: any = {
   main: {
-    backgroundColor: "#0b0b0b",
+    backgroundColor: "#050505",
     color: "white",
     minHeight: "100vh",
     fontFamily: "Arial",
   },
 
   hero: {
+    minHeight: "100vh",
+    backgroundImage:
+      "linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url('/season4-bg.png')",
+    backgroundSize: "contain",
+    backgroundPosition: "top center",
+    backgroundRepeat: "no-repeat",
+    backgroundColor: "#050505",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
     textAlign: "center",
-    padding: "120px 20px",
-    background: "linear-gradient(to bottom, #111111, #1b1b1b)",
+    padding: "160px 20px 80px",
   },
 
-  title: {
-    fontSize: "64px",
+  overlay: {
+    maxWidth: "900px",
+  },
+
+  season: {
+    fontSize: "42px",
+    color: "#ffcc00",
+    letterSpacing: "6px",
+    marginBottom: "10px",
+    textShadow: "0 0 20px rgba(255,204,0,0.8)",
+  },
+
+  mainTitle: {
+    fontSize: "90px",
     fontWeight: "bold",
     marginBottom: "20px",
-    color: "#ffcc00",
+    color: "white",
+    lineHeight: "1.1",
+    textShadow: "0 0 25px rgba(0,0,0,0.9)",
   },
 
   subtitle: {
-    fontSize: "20px",
+    fontSize: "24px",
     lineHeight: "1.8",
-    color: "#cccccc",
-    marginBottom: "40px",
+    color: "#dddddd",
+    marginBottom: "50px",
+    textShadow: "0 0 10px rgba(0,0,0,0.8)",
   },
 
   button: {
     backgroundColor: "#ffcc00",
     color: "#000",
-    padding: "15px 35px",
-    borderRadius: "10px",
+    padding: "18px 45px",
+    borderRadius: "12px",
     textDecoration: "none",
     fontWeight: "bold",
-    fontSize: "18px",
+    fontSize: "20px",
+    boxShadow: "0 0 20px rgba(255,204,0,0.5)",
   },
 
   section: {
-    padding: "80px 20px",
+    padding: "100px 20px",
     maxWidth: "1200px",
     margin: "0 auto",
   },
 
   sectionDark: {
-    padding: "80px 20px",
-    backgroundColor: "#151515",
+    padding: "100px 20px",
+    backgroundColor: "#101010",
   },
 
   sectionTitle: {
     textAlign: "center",
-    fontSize: "40px",
+    fontSize: "48px",
     marginBottom: "50px",
     color: "#ffcc00",
   },
@@ -242,23 +301,25 @@ const styles: any = {
   text: {
     textAlign: "center",
     color: "#cccccc",
-    lineHeight: "1.8",
-    fontSize: "18px",
+    lineHeight: "1.9",
+    fontSize: "20px",
   },
 
   infoBox: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: "20px",
-    marginTop: "50px",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "25px",
+    marginTop: "60px",
   },
 
   card: {
-    backgroundColor: "#1f1f1f",
-    padding: "30px",
-    borderRadius: "15px",
+    backgroundColor: "#161616",
+    padding: "35px",
+    borderRadius: "18px",
     textAlign: "center",
     border: "1px solid #333",
+    boxShadow: "0 0 15px rgba(255,204,0,0.1)",
   },
 
   form: {
@@ -270,33 +331,34 @@ const styles: any = {
   },
 
   input: {
-    padding: "15px",
-    borderRadius: "10px",
+    padding: "16px",
+    borderRadius: "12px",
     border: "1px solid #333",
-    backgroundColor: "#222",
+    backgroundColor: "#1b1b1b",
     color: "white",
     fontSize: "16px",
   },
 
   textarea: {
-    padding: "15px",
-    borderRadius: "10px",
+    padding: "16px",
+    borderRadius: "12px",
     border: "1px solid #333",
-    backgroundColor: "#222",
+    backgroundColor: "#1b1b1b",
     color: "white",
-    minHeight: "140px",
+    minHeight: "150px",
     fontSize: "16px",
   },
 
   submitButton: {
     backgroundColor: "#ffcc00",
     color: "#000",
-    padding: "16px",
+    padding: "18px",
     border: "none",
-    borderRadius: "10px",
+    borderRadius: "12px",
     fontWeight: "bold",
     fontSize: "18px",
     cursor: "pointer",
+    boxShadow: "0 0 15px rgba(255,204,0,0.3)",
   },
 
   footer: {
@@ -304,6 +366,5 @@ const styles: any = {
     padding: "40px",
     color: "#777",
     borderTop: "1px solid #222",
-    marginTop: "60px",
   },
 };
