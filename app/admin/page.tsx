@@ -87,11 +87,17 @@ export default function AdminPage() {
     })
     .sort((a, b) => {
       if (sortType === "newest") {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return (
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+        );
       }
 
       if (sortType === "oldest") {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return (
+          new Date(a.created_at).getTime() -
+          new Date(b.created_at).getTime()
+        );
       }
 
       if (sortType === "power_high") {
@@ -112,6 +118,57 @@ export default function AdminPage() {
 
       return 0;
     });
+
+  function downloadCSV() {
+    const headers = [
+      "Name",
+      "Server",
+      "Power",
+      "Alliance",
+      "Migration Grade",
+      "Message",
+      "Created At",
+    ];
+
+    const rows = filteredData.map((item) => [
+      item.name || "",
+      item.server || "",
+      item.power || "",
+      item.alliance || "",
+      item.migration_grade || "",
+      item.message || "",
+      item.created_at
+        ? new Date(item.created_at).toLocaleString()
+        : "",
+    ]);
+
+    const csvContent = [
+      headers,
+      ...rows,
+    ]
+      .map((row) =>
+        row
+          .map((value) =>
+            `"${String(value).replace(/"/g, '""')}"`
+          )
+          .join(",")
+      )
+      .join("\n");
+
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "198-migration-applications.csv";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  }
 
   if (!authorized) {
     return (
@@ -172,6 +229,10 @@ export default function AdminPage() {
           <option value="name_asc">Name A → Z</option>
           <option value="name_desc">Name Z → A</option>
         </select>
+
+        <button onClick={downloadCSV} style={downloadButtonStyle}>
+          Download CSV
+        </button>
       </div>
 
       <p style={countStyle}>
@@ -259,7 +320,7 @@ const titleStyle: React.CSSProperties = {
 
 const topBarStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "2fr 1fr 1fr",
+  gridTemplateColumns: "2fr 1fr 1fr 160px",
   gap: "12px",
   marginBottom: "15px",
 };
@@ -279,6 +340,16 @@ const buttonStyle: React.CSSProperties = {
   padding: "16px",
   border: "none",
   borderRadius: "10px",
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const downloadButtonStyle: React.CSSProperties = {
+  backgroundColor: "#ffcc00",
+  color: "black",
+  padding: "14px",
+  border: "none",
+  borderRadius: "8px",
   fontWeight: "bold",
   cursor: "pointer",
 };
