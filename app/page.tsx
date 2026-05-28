@@ -239,10 +239,13 @@ const styles: any = {
   },
 
   // 텍스트 아래로
-  textBlock: {
-    marginTop: "820px",
-  },
-
+textBlock: {
+  marginTop:
+    typeof window !== "undefined" &&
+    window.innerWidth <= 768
+      ? "620px"
+      : "820px",
+},
   season: {
     fontSize: "clamp(24px, 5vw, 42px)",
     color: "#ffd400",
