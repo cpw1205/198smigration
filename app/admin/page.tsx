@@ -1,37 +1,131 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authorized, setAuthorized] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   const [search, setSearch] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
   const [sortType, setSortType] = useState("newest");
 
-  async function login() {
-    setLoading(true);
+  // 페이지를 새로고침했을 때 같은 탭의 로그인 상태 복원
+  useEffect(() => {
+    const savedPassword = sessionStorage.getItem("adminPassword");
 
-    const res = await fetch("/api/applications", {
-      headers: {
-        "x-admin-password": password,
-      },
-    });
+    if (savedPassword) {
+      setPassword(savedPassword);
+      loadApplications(savedPassword, false);
+    } else {
+      setInitializing(false);
+    }
+  }, []);
 
-    setLoading(false);
+  // 신청자 목록 불러오기
+  async function loadApplications(
+    adminPassword?: string,
+    showError = true
+  ) {
+    const passwordToUse =
+      adminPassword ||
+      sessionStorage.getItem("adminPassword") ||
+      password;
 
-    if (!res.ok) {
-      alert("Wrong password");
+    if (!passwordToUse) {
+      setAuthorized(false);
+      setInitializing(false);
       return;
     }
 
-    const result = await res.json();
-    setData(result);
-    setAuthorized(true);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/applications", {
+        cache: "no-store",
+        headers: {
+          "x-admin-password": passwordToUse,
+        },
+      });
+
+      if (!res.ok) {
+        sessionStorage.removeItem("adminPassword");
+        setAuthorized(false);
+
+        if (showError) {
+          alert("Unable to load applications.");
+        }
+
+        return;
+      }
+
+      const result = await res.json();
+
+      setData(result);
+      setAuthorized(true);
+    } catch (error) {
+      console.error(error);
+
+      if (showError) {
+        alert("Failed to refresh applications.");
+      }
+    } finally {
+      setLoading(false);
+      setInitializing(false);
+    }
+  }
+
+  // 관리자 로그인
+  async function login() {
+    if (!password.trim()) {
+      alert("Please enter the admin password.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/applications", {
+        cache: "no-store",
+        headers: {
+          "x-admin-password": password,
+        },
+      });
+
+      if (!res.ok) {
+        alert("Wrong password");
+        return;
+      }
+
+      const result = await res.json();
+
+      // 같은 탭에서 F5해도 로그인 유지
+      sessionStorage.setItem("adminPassword", password);
+
+      setData(result);
+      setAuthorized(true);
+    } catch (error) {
+      console.error(error);
+      alert("Login failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 리스트만 새로고침
+  async function refreshList() {
+    const savedPassword = sessionStorage.getItem("adminPassword");
+
+    if (!savedPassword) {
+      setAuthorized(false);
+      return;
+    }
+
+    await loadApplications(savedPassword);
   }
 
   async function handleDelete(id: number) {
@@ -61,9 +155,17 @@ export default function AdminPage() {
       .replace(/,/g, "")
       .replace(/ /g, "");
 
-    if (cleaned.includes("b")) return parseFloat(cleaned) * 1000000000;
-    if (cleaned.includes("m")) return parseFloat(cleaned) * 1000000;
-    if (cleaned.includes("k")) return parseFloat(cleaned) * 1000;
+    if (cleaned.includes("b")) {
+      return parseFloat(cleaned) * 1000000000;
+    }
+
+    if (cleaned.includes("m")) {
+      return parseFloat(cleaned) * 1000000;
+    }
+
+    if (cleaned.includes("k")) {
+      return parseFloat(cleaned) * 1000;
+    }
 
     return Number(cleaned) || 0;
   }
@@ -81,7 +183,8 @@ export default function AdminPage() {
         item.message?.toLowerCase().includes(keyword);
 
       const matchesGrade =
-        gradeFilter === "" || item.migration_grade === gradeFilter;
+        gradeFilter === "" ||
+        item.migration_grade === gradeFilter;
 
       return matchesSearch && matchesGrade;
     })
@@ -148,14 +251,16 @@ export default function AdminPage() {
     ]
       .map((row) =>
         row
-          .map((value) =>
-            `"${String(value).replace(/"/g, '""')}"`
+          .map(
+            (value) =>
+              `"${String(value).replace(/"/g, '""')}"`
           )
           .join(",")
       )
       .join("\n");
 
     const bom = "\uFEFF";
+
     const blob = new Blob([bom + csvContent], {
       type: "text/csv;charset=utf-8;",
     });
@@ -170,21 +275,48 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   }
 
+  // 새로고침 직후 로그인 상태 확인 중
+  if (initializing) {
+    return (
+      <main style={mainStyle}>
+        <div style={loginBoxStyle}>
+          <h1 style={loginTitleStyle}>
+            Loading Admin...
+          </h1>
+        </div>
+      </main>
+    );
+  }
+
+  // 로그인 전
   if (!authorized) {
     return (
       <main style={mainStyle}>
         <div style={loginBoxStyle}>
-          <h1 style={loginTitleStyle}>Admin Login</h1>
+          <h1 style={loginTitleStyle}>
+            Admin Login
+          </h1>
 
           <input
             type="password"
             placeholder="Admin Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                login();
+              }
+            }}
             style={inputStyle}
           />
 
-          <button onClick={login} style={buttonStyle}>
+          <button
+            onClick={login}
+            style={buttonStyle}
+            disabled={loading}
+          >
             {loading ? "Loading..." : "Login"}
           </button>
         </div>
@@ -192,45 +324,98 @@ export default function AdminPage() {
     );
   }
 
+  // 로그인 후
   return (
     <main style={mainStyle}>
-      <h1 style={titleStyle}>Applications</h1>
+      <div style={headerStyle}>
+        <h1 style={titleStyle}>
+          Applications
+        </h1>
+
+        <button
+          onClick={refreshList}
+          style={refreshButtonStyle}
+          disabled={loading}
+        >
+          {loading ? "Refreshing..." : "↻ Refresh List"}
+        </button>
+      </div>
 
       <div style={topBarStyle}>
         <input
           type="text"
           placeholder="Search name, server, alliance, power..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
           style={inputStyle}
         />
 
         <select
           value={gradeFilter}
-          onChange={(e) => setGradeFilter(e.target.value)}
+          onChange={(e) =>
+            setGradeFilter(e.target.value)
+          }
           style={inputStyle}
         >
-          <option value="">All Grades</option>
-          <option value="Elite">Elite (특급)</option>
-          <option value="Advanced">Advanced (고급)</option>
-          <option value="Medium">Medium (중급)</option>
-          <option value="Regular">Regular (일반)</option>
+          <option value="">
+            All Grades
+          </option>
+
+          <option value="Elite">
+            Elite (특급)
+          </option>
+
+          <option value="Advanced">
+            Advanced (고급)
+          </option>
+
+          <option value="Medium">
+            Medium (중급)
+          </option>
+
+          <option value="Regular">
+            Regular (일반)
+          </option>
         </select>
 
         <select
           value={sortType}
-          onChange={(e) => setSortType(e.target.value)}
+          onChange={(e) =>
+            setSortType(e.target.value)
+          }
           style={inputStyle}
         >
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="power_high">Power High → Low</option>
-          <option value="power_low">Power Low → High</option>
-          <option value="name_asc">Name A → Z</option>
-          <option value="name_desc">Name Z → A</option>
+          <option value="newest">
+            Newest First
+          </option>
+
+          <option value="oldest">
+            Oldest First
+          </option>
+
+          <option value="power_high">
+            Power High → Low
+          </option>
+
+          <option value="power_low">
+            Power Low → High
+          </option>
+
+          <option value="name_asc">
+            Name A → Z
+          </option>
+
+          <option value="name_desc">
+            Name Z → A
+          </option>
         </select>
 
-        <button onClick={downloadCSV} style={downloadButtonStyle}>
+        <button
+          onClick={downloadCSV}
+          style={downloadButtonStyle}
+        >
           Download CSV
         </button>
       </div>
@@ -257,20 +442,43 @@ export default function AdminPage() {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item.id}>
-                <td style={tdStyle}>{item.name}</td>
-                <td style={tdStyle}>{item.server}</td>
-                <td style={tdStyle}>{item.power}</td>
-                <td style={tdStyle}>{item.alliance}</td>
-                <td style={tdStyle}>{item.migration_grade}</td>
-                <td style={messageTdStyle}>{item.message}</td>
+                <td style={tdStyle}>
+                  {item.name}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.server}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.power}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.alliance}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.migration_grade}
+                </td>
+
+                <td style={messageTdStyle}>
+                  {item.message}
+                </td>
+
                 <td style={tdStyle}>
                   {item.created_at
-                    ? new Date(item.created_at).toLocaleString()
+                    ? new Date(
+                        item.created_at
+                      ).toLocaleString()
                     : ""}
                 </td>
+
                 <td style={tdStyle}>
                   <button
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() =>
+                      handleDelete(item.id)
+                    }
                     style={deleteButtonStyle}
                   >
                     Delete
@@ -281,7 +489,10 @@ export default function AdminPage() {
 
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan={8} style={emptyStyle}>
+                <td
+                  colSpan={8}
+                  style={emptyStyle}
+                >
                   No applications found.
                 </td>
               </tr>
@@ -313,14 +524,23 @@ const loginTitleStyle: React.CSSProperties = {
   color: "lime",
 };
 
+const headerStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "20px",
+  marginBottom: "25px",
+};
+
 const titleStyle: React.CSSProperties = {
   color: "lime",
-  marginBottom: "25px",
+  margin: 0,
 };
 
 const topBarStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "2fr 1fr 1fr 160px",
+  gridTemplateColumns:
+    "minmax(260px, 2fr) minmax(150px, 1fr) minmax(170px, 1fr) 160px",
   gap: "12px",
   marginBottom: "15px",
 };
@@ -342,6 +562,17 @@ const buttonStyle: React.CSSProperties = {
   borderRadius: "10px",
   fontWeight: "bold",
   cursor: "pointer",
+};
+
+const refreshButtonStyle: React.CSSProperties = {
+  backgroundColor: "lime",
+  color: "black",
+  padding: "12px 18px",
+  border: "none",
+  borderRadius: "8px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
 };
 
 const downloadButtonStyle: React.CSSProperties = {
