@@ -17,6 +17,17 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
 
+  // 자체 팝업 상태
+  const [popup, setPopup] = useState<{
+    show: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({
+    show: false,
+    type: "success",
+    message: "",
+  });
+
   const t = {
     en: {
       why: "WHY SERVER 198?",
@@ -25,7 +36,8 @@ export default function Home() {
       intro2:
         "Strong alliances, organized leadership, active international players, and coordinated warfare systems await.",
       topAlliances: "TOP ALLIANCES",
-      topText: "Multiple powerful alliances with experienced rally leaders and active fighters.",
+      topText:
+        "Multiple powerful alliances with experienced rally leaders and active fighters.",
       svs: "SVS ORGANIZATION",
       svsText:
         "Organized battle plans, capital rotation, rally coordination, and tactical warfare.",
@@ -49,9 +61,10 @@ export default function Home() {
       message: "Introduce yourself",
       submit: "SUBMIT APPLICATION",
       submitting: "SUBMITTING...",
-      success: "Application submitted successfully!",
-      failed: "Submission failed.",
+      success: "SUCCESS!",
+      failed: "SUBMISSION FAILED",
     },
+
     ko: {
       why: "왜 서버 198인가?",
       intro:
@@ -85,8 +98,8 @@ export default function Home() {
       message: "자기소개",
       submit: "신청하기",
       submitting: "신청 중...",
-      success: "신청이 완료되었습니다!",
-      failed: "신청에 실패했습니다.",
+      success: "신청 완료!",
+      failed: "신청 실패",
     },
   }[lang];
 
@@ -99,6 +112,24 @@ export default function Home() {
       ...form,
       [e.target.name]: e.target.value,
     });
+  }
+
+  function showPopup(
+    type: "success" | "error",
+    message: string
+  ) {
+    setPopup({
+      show: true,
+      type,
+      message,
+    });
+
+    setTimeout(() => {
+      setPopup((prev) => ({
+        ...prev,
+        show: false,
+      }));
+    }, 2000);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -120,11 +151,12 @@ export default function Home() {
     setLoading(false);
 
     if (error) {
-      alert(t.failed);
+      console.error(error);
+      showPopup("error", t.failed);
       return;
     }
 
-    alert(t.success);
+    showPopup("success", t.success);
 
     setForm({
       name: "",
@@ -138,6 +170,26 @@ export default function Home() {
 
   return (
     <main className="main">
+
+      {/* 성공 / 실패 팝업 */}
+      {popup.show && (
+        <div className="popupOverlay">
+          <div
+            className={`customPopup ${
+              popup.type === "success" ? "successPopup" : "errorPopup"
+            }`}
+          >
+            <div className="popupIcon">
+              {popup.type === "success" ? "✓" : "!"}
+            </div>
+
+            <div className="popupMessage">
+              {popup.message}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="languageBox">
         <button
           className={lang === "en" ? "activeLang" : ""}
@@ -196,6 +248,7 @@ export default function Home() {
         <h2>{t.application}</h2>
 
         <form onSubmit={handleSubmit} className="form">
+
           <input
             type="text"
             name="name"
@@ -254,6 +307,7 @@ export default function Home() {
           <button type="submit" disabled={loading}>
             {loading ? t.submitting : t.submit}
           </button>
+
         </form>
       </section>
 
@@ -269,6 +323,96 @@ export default function Home() {
           font-family: Arial, sans-serif;
           overflow-x: hidden;
         }
+
+        /* =========================
+           CUSTOM SUCCESS POPUP
+        ========================== */
+
+        .popupOverlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.65);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 99999;
+          animation: fadeIn 0.2s ease;
+        }
+
+        .customPopup {
+          width: 320px;
+          padding: 38px 30px;
+          background: #111;
+          border-radius: 20px;
+          text-align: center;
+          box-shadow: 0 0 40px rgba(255, 212, 0, 0.35);
+          animation: popupIn 0.25s ease;
+        }
+
+        .successPopup {
+          border: 2px solid #ffd400;
+        }
+
+        .errorPopup {
+          border: 2px solid #ff4d4d;
+        }
+
+        .popupIcon {
+          width: 70px;
+          height: 70px;
+          margin: 0 auto 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 42px;
+          font-weight: bold;
+          color: #000;
+          background: #ffd400;
+          box-shadow: 0 0 25px rgba(255, 212, 0, 0.55);
+        }
+
+        .errorPopup .popupIcon {
+          background: #ff4d4d;
+          color: white;
+          box-shadow: 0 0 25px rgba(255, 77, 77, 0.45);
+        }
+
+        .popupMessage {
+          color: #ffd400;
+          font-size: 23px;
+          font-weight: bold;
+          letter-spacing: 1px;
+        }
+
+        .errorPopup .popupMessage {
+          color: #ff6b6b;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes popupIn {
+          from {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        /* ========================= */
 
         .languageBox {
           position: fixed;
@@ -452,6 +596,21 @@ export default function Home() {
 
           .card p {
             font-size: 16px;
+          }
+
+          .customPopup {
+            width: 260px;
+            padding: 32px 20px;
+          }
+
+          .popupIcon {
+            width: 60px;
+            height: 60px;
+            font-size: 36px;
+          }
+
+          .popupMessage {
+            font-size: 20px;
           }
         }
       `}</style>
