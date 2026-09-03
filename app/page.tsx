@@ -17,7 +17,6 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
 
-  // 자체 팝업 상태
   const [popup, setPopup] = useState<{
     show: boolean;
     type: "success" | "error";
@@ -31,74 +30,123 @@ export default function Home() {
   const t = {
     en: {
       why: "WHY SERVER 198?",
+
       intro:
-        "Server 198 is preparing for one of the most competitive Season 4 battlefields.",
+        "Server 198 is preparing for the darkness of Season 5.",
+
       intro2:
-        "Strong alliances, organized leadership, active international players, and coordinated warfare systems await.",
-      topAlliances: "TOP ALLIANCES",
+        "Powerful alliances, organized leadership, active global players, and coordinated warfare await you.",
+
+      topAlliances: "MAIN ALLIANCES",
+
       topText:
-        "Multiple powerful alliances with experienced rally leaders and active fighters.",
+        "ETR, NXTT, PTHD, FATL, ICC and Ady stand together as the main forces of Server 198.",
+
       svs: "SVS ORGANIZATION",
+
       svsText:
-        "Organized battle plans, capital rotation, rally coordination, and tactical warfare.",
+        "Organized battle plans, capital warfare, rally coordination, and strategic combat.",
+
       svsSub:
-        "Every alliance has battlefield roles and strategic objectives during SVS.",
+        "Our alliances cooperate with clear battlefield roles and coordinated objectives.",
+
       global: "GLOBAL COMMUNITY",
-      globalText: "International active players from multiple regions.",
+
+      globalText:
+        "An active international community with players from multiple regions.",
+
       globalSub:
-        "Daily activity, fast communication, and cooperative gameplay environment.",
-      season: "SEASON 4 PREPARATION",
+        "Fast communication, daily activity, teamwork, and long-term growth.",
+
+      season: "SEASON 5 — VAMPIRE AWAKENING",
+
       seasonText:
-        "Preparing for dinosaur battlefield warfare and large-scale combat.",
+        "When darkness falls, Server 198 rises.",
+
       seasonSub:
-        "Recruitment focused on active, long-term competitive players.",
+        "Prepare for the vampire battlefield and fight together with Server 198.",
+
       application: "MIGRATION APPLICATION",
+
       name: "Nickname",
+
       server: "Current Server",
+
       power: "Power",
+
       alliance: "Current Alliance",
+
       grade: "Select Migration Grade",
+
       message: "Introduce yourself",
+
       submit: "SUBMIT APPLICATION",
+
       submitting: "SUBMITTING...",
+
       success: "SUCCESS!",
+
       failed: "SUBMISSION FAILED",
     },
 
     ko: {
       why: "왜 서버 198인가?",
+
       intro:
-        "서버 198은 시즌4의 치열한 전장을 준비하고 있습니다.",
+        "서버 198은 어둠이 지배하는 시즌5의 전장을 준비하고 있습니다.",
+
       intro2:
-        "강력한 연맹, 체계적인 지휘, 활발한 글로벌 유저, 조직적인 전쟁 시스템이 준비되어 있습니다.",
+        "강력한 연맹, 체계적인 지휘, 활발한 글로벌 유저와 조직적인 전쟁 시스템이 여러분을 기다리고 있습니다.",
+
       topAlliances: "주요 연맹",
+
       topText:
-        "숙련된 랠리 리더와 활발한 전투 유저들이 함께하는 강력한 연맹들이 있습니다.",
+        "ETR, NXTT, PTHD, FATL, ICC, Ady가 서버 198의 주요 전력으로 함께하고 있습니다.",
+
       svs: "SVS 조직력",
+
       svsText:
-        "전투 계획, 수도 운영, 랠리 조율, 전략적인 전쟁 운영을 진행합니다.",
+        "체계적인 전투 계획, 수도전, 랠리 조율과 전략적인 전쟁 운영을 진행합니다.",
+
       svsSub:
-        "각 연맹은 SVS에서 역할과 목표를 가지고 움직입니다.",
+        "각 연맹은 명확한 역할과 목표를 가지고 하나의 서버로 움직입니다.",
+
       global: "글로벌 커뮤니티",
+
       globalText:
-        "여러 지역의 활발한 글로벌 유저들이 함께합니다.",
+        "여러 지역의 활발한 글로벌 유저들이 함께하고 있습니다.",
+
       globalSub:
-        "빠른 소통, 일일 활동, 협력적인 플레이 환경을 제공합니다.",
-      season: "시즌4 준비",
+        "빠른 소통과 높은 활동률, 협력적인 플레이 환경을 제공합니다.",
+
+      season: "시즌5 — 뱀파이어의 각성",
+
       seasonText:
-        "공룡 전장과 대규모 전투를 준비하고 있습니다.",
+        "어둠이 내려오면, 서버 198이 깨어납니다.",
+
       seasonSub:
-        "장기적으로 함께할 활발하고 경쟁력 있는 유저를 모집합니다.",
+        "뱀파이어의 전장을 준비하고 서버 198과 함께 시즌5를 싸워나가세요.",
+
       application: "이민 신청서",
+
       name: "닉네임",
+
       server: "현재 서버",
+
       power: "전투력",
+
       alliance: "현재 연맹",
+
       grade: "이민 등급 선택",
+
       message: "자기소개",
+
       submit: "신청하기",
+
       submitting: "신청 중...",
+
       success: "신청 완료!",
+
       failed: "신청 실패",
     },
   }[lang];
@@ -171,12 +219,13 @@ export default function Home() {
   return (
     <main className="main">
 
-      {/* 성공 / 실패 팝업 */}
       {popup.show && (
         <div className="popupOverlay">
           <div
             className={`customPopup ${
-              popup.type === "success" ? "successPopup" : "errorPopup"
+              popup.type === "success"
+                ? "successPopup"
+                : "errorPopup"
             }`}
           >
             <div className="popupIcon">
@@ -206,10 +255,47 @@ export default function Home() {
         </button>
       </div>
 
-      <section className="hero"></section>
+      <section className="hero">
+        <div className="heroShade"></div>
+
+        <div className="heroContent">
+          <div className="seasonLabel">
+            SEASON 5
+          </div>
+
+          <h1>
+            SERVER 198
+          </h1>
+
+          <div className="heroDivider"></div>
+
+          <h3>
+            VAMPIRE AWAKENING
+          </h3>
+
+          <p>
+            {lang === "en"
+              ? "THE NIGHT AWAKENS"
+              : "어둠이 깨어난다"}
+          </p>
+
+          <a href="#apply" className="heroButton">
+            {lang === "en"
+              ? "JOIN SERVER 198"
+              : "서버 198 합류하기"}
+          </a>
+        </div>
+      </section>
 
       <section className="infoSection">
-        <h2>{t.why}</h2>
+
+        <div className="sectionSymbol">
+          ◆
+        </div>
+
+        <h2>
+          {t.why}
+        </h2>
 
         <p className="mainText">
           {t.intro}
@@ -218,36 +304,234 @@ export default function Home() {
         </p>
 
         <div className="infoBox">
-          <div className="card">
-            <h3>{t.topAlliances}</h3>
-            <p>ETR / RIS3 / 0KK / PTHD</p>
-            <span>{t.topText}</span>
+
+          <div className="card allianceCard">
+            <div className="cardIcon">
+              ♛
+            </div>
+
+            <h3>
+              {t.topAlliances}
+            </h3>
+
+            <p className="allianceNames">
+              ETR
+              <span className="separator"> / </span>
+              NXTT
+              <span className="separator"> / </span>
+              PTHD
+              <span className="separator"> / </span>
+              FATL
+              <span className="separator"> / </span>
+              ICC
+              <span className="separator"> / </span>
+              Ady
+            </p>
+
+            <span>
+              {t.topText}
+            </span>
           </div>
 
           <div className="card">
-            <h3>{t.svs}</h3>
-            <p>{t.svsText}</p>
-            <span>{t.svsSub}</span>
+            <div className="cardIcon">
+              ⚔
+            </div>
+
+            <h3>
+              {t.svs}
+            </h3>
+
+            <p>
+              {t.svsText}
+            </p>
+
+            <span>
+              {t.svsSub}
+            </span>
           </div>
 
           <div className="card">
-            <h3>{t.global}</h3>
-            <p>{t.globalText}</p>
-            <span>{t.globalSub}</span>
+            <div className="cardIcon">
+              ◉
+            </div>
+
+            <h3>
+              {t.global}
+            </h3>
+
+            <p>
+              {t.globalText}
+            </p>
+
+            <span>
+              {t.globalSub}
+            </span>
           </div>
 
-          <div className="card">
-            <h3>{t.season}</h3>
-            <p>{t.seasonText}</p>
-            <span>{t.seasonSub}</span>
+          <div className="card seasonCard">
+            <div className="cardIcon vampireIcon">
+              ◆
+            </div>
+
+            <h3>
+              {t.season}
+            </h3>
+
+            <p>
+              {t.seasonText}
+            </p>
+
+            <span>
+              {t.seasonSub}
+            </span>
           </div>
+
         </div>
       </section>
 
-      <section id="apply" className="applySection">
-        <h2>{t.application}</h2>
+      <section className="allianceSection">
 
-        <form onSubmit={handleSubmit} className="form">
+        <div className="sectionSymbol">
+          ◆
+        </div>
+
+        <h2>
+          {lang === "en"
+            ? "MAIN ALLIANCES OF SERVER 198"
+            : "서버 198 주요 연맹"}
+        </h2>
+
+        <p className="allianceIntro">
+          {lang === "en"
+            ? "Six alliances. One battlefield. One Server."
+            : "여섯 개의 연맹, 하나의 전장, 하나의 서버."}
+        </p>
+
+        <div className="allianceGrid">
+
+          <div className="allianceBox">
+            <div className="allianceLogo">
+              E
+            </div>
+
+            <h3>
+              ETR
+            </h3>
+
+            <p>
+              {lang === "en"
+                ? "MAIN ALLIANCE"
+                : "주요 연맹"}
+            </p>
+          </div>
+
+          <div className="allianceBox">
+            <div className="allianceLogo">
+              N
+            </div>
+
+            <h3>
+              NXTT
+            </h3>
+
+            <p>
+              {lang === "en"
+                ? "MAIN ALLIANCE"
+                : "주요 연맹"}
+            </p>
+          </div>
+
+          <div className="allianceBox">
+            <div className="allianceLogo">
+              P
+            </div>
+
+            <h3>
+              PTHD
+            </h3>
+
+            <p>
+              {lang === "en"
+                ? "MAIN ALLIANCE"
+                : "주요 연맹"}
+            </p>
+          </div>
+
+          <div className="allianceBox">
+            <div className="allianceLogo">
+              F
+            </div>
+
+            <h3>
+              FATL
+            </h3>
+
+            <p>
+              {lang === "en"
+                ? "MAIN ALLIANCE"
+                : "주요 연맹"}
+            </p>
+          </div>
+
+          <div className="allianceBox">
+            <div className="allianceLogo">
+              I
+            </div>
+
+            <h3>
+              ICC
+            </h3>
+
+            <p>
+              {lang === "en"
+                ? "MAIN ALLIANCE"
+                : "주요 연맹"}
+            </p>
+          </div>
+
+          <div className="allianceBox">
+            <div className="allianceLogo">
+              A
+            </div>
+
+            <h3>
+              Ady
+            </h3>
+
+            <p>
+              {lang === "en"
+                ? "MAIN ALLIANCE"
+                : "주요 연맹"}
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <section
+        id="apply"
+        className="applySection"
+      >
+
+        <div className="sectionSymbol">
+          ◆
+        </div>
+
+        <h2>
+          {t.application}
+        </h2>
+
+        <p className="applicationIntro">
+          {lang === "en"
+            ? "Enter the darkness. Join Server 198."
+            : "어둠 속 새로운 전장, 서버 198과 함께하세요."}
+        </p>
+
+        <form
+          onSubmit={handleSubmit}
+          className="form"
+        >
 
           <input
             type="text"
@@ -290,11 +574,25 @@ export default function Home() {
             onChange={handleChange}
             required
           >
-            <option value="">{t.grade}</option>
-            <option value="Elite">Elite (특급)</option>
-            <option value="Advanced">Advanced (고급)</option>
-            <option value="Medium">Medium (중급)</option>
-            <option value="Regular">Regular (일반)</option>
+            <option value="">
+              {t.grade}
+            </option>
+
+            <option value="Elite">
+              Elite (특급)
+            </option>
+
+            <option value="Advanced">
+              Advanced (고급)
+            </option>
+
+            <option value="Medium">
+              Medium (중급)
+            </option>
+
+            <option value="Regular">
+              Regular (일반)
+            </option>
           </select>
 
           <textarea
@@ -304,316 +602,1334 @@ export default function Home() {
             onChange={handleChange}
           />
 
-          <button type="submit" disabled={loading}>
-            {loading ? t.submitting : t.submit}
+          <button
+            type="submit"
+            disabled={loading}
+            className="submitButton"
+          >
+            {loading
+              ? t.submitting
+              : t.submit}
           </button>
 
         </form>
       </section>
 
       <footer>
-        © 2026 SERVER 198 MIGRATION
+
+        <div className="footerTitle">
+          SERVER 198
+        </div>
+
+        <div className="footerSeason">
+          SEASON 5 — VAMPIRE AWAKENING
+        </div>
+
+        <div className="footerAlliances">
+          ETR • NXTT • PTHD • FATL • ICC • Ady
+        </div>
+
+        <div className="copyright">
+          © 2026 SERVER 198 MIGRATION
+        </div>
+
       </footer>
 
       <style jsx>{`
-        .main {
-          background: #050505;
-          color: white;
-          min-height: 100vh;
-          font-family: Arial, sans-serif;
-          overflow-x: hidden;
+
+        * {
+          box-sizing: border-box;
         }
 
-        /* =========================
-           CUSTOM SUCCESS POPUP
-        ========================== */
+        html {
+          scroll-behavior: smooth;
+        }
+
+        .main {
+          background:
+            radial-gradient(
+              circle at top,
+              #200309 0%,
+              #090204 38%,
+              #030102 100%
+            );
+
+          color: #f8eeee;
+          min-height: 100vh;
+
+          font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+          overflow-x: hidden;
+        }
 
         .popupOverlay {
           position: fixed;
           top: 0;
           left: 0;
+
           width: 100%;
           height: 100%;
-          background: rgba(0, 0, 0, 0.65);
+
+          background:
+            rgba(0, 0, 0, 0.78);
+
           display: flex;
           justify-content: center;
           align-items: center;
+
           z-index: 99999;
-          animation: fadeIn 0.2s ease;
+
+          backdrop-filter:
+            blur(5px);
+
+          animation:
+            fadeIn 0.2s ease;
         }
 
         .customPopup {
           width: 320px;
-          padding: 38px 30px;
-          background: #111;
+
+          padding:
+            38px 30px;
+
+          background:
+            linear-gradient(
+              145deg,
+              #18060a,
+              #080203
+            );
+
           border-radius: 20px;
           text-align: center;
-          box-shadow: 0 0 40px rgba(255, 212, 0, 0.35);
-          animation: popupIn 0.25s ease;
+
+          box-shadow:
+            0 0 35px
+            rgba(190, 20, 45, 0.4);
+
+          animation:
+            popupIn 0.25s ease;
         }
 
         .successPopup {
-          border: 2px solid #ffd400;
+          border:
+            2px solid
+            #b51632;
         }
 
         .errorPopup {
-          border: 2px solid #ff4d4d;
+          border:
+            2px solid
+            #ff435a;
         }
 
         .popupIcon {
           width: 70px;
           height: 70px;
-          margin: 0 auto 20px;
-          border-radius: 50%;
+
+          margin:
+            0 auto 20px;
+
+          border-radius:
+            50%;
+
           display: flex;
           align-items: center;
           justify-content: center;
+
           font-size: 42px;
           font-weight: bold;
-          color: #000;
-          background: #ffd400;
-          box-shadow: 0 0 25px rgba(255, 212, 0, 0.55);
+
+          color:
+            white;
+
+          background:
+            linear-gradient(
+              135deg,
+              #700716,
+              #c71c38
+            );
+
+          box-shadow:
+            0 0 25px
+            rgba(190, 25, 50, 0.6);
         }
 
         .errorPopup .popupIcon {
-          background: #ff4d4d;
-          color: white;
-          box-shadow: 0 0 25px rgba(255, 77, 77, 0.45);
+          background:
+            #ff435a;
+
+          color:
+            white;
         }
 
         .popupMessage {
-          color: #ffd400;
-          font-size: 23px;
-          font-weight: bold;
-          letter-spacing: 1px;
+          color:
+            #ef3451;
+
+          font-size:
+            23px;
+
+          font-weight:
+            bold;
+
+          letter-spacing:
+            1px;
         }
 
         .errorPopup .popupMessage {
-          color: #ff6b6b;
+          color:
+            #ff6577;
         }
 
         @keyframes fadeIn {
+
           from {
             opacity: 0;
           }
+
           to {
             opacity: 1;
           }
+
         }
 
         @keyframes popupIn {
+
           from {
             opacity: 0;
-            transform: scale(0.8);
+
+            transform:
+              scale(0.8);
           }
+
           to {
             opacity: 1;
-            transform: scale(1);
-          }
-        }
 
-        /* ========================= */
+            transform:
+              scale(1);
+          }
+
+        }
 
         .languageBox {
           position: fixed;
+
           top: 16px;
           right: 16px;
+
           z-index: 999;
+
           display: flex;
+
           gap: 8px;
         }
 
         .languageBox button {
-          background: rgba(0, 0, 0, 0.75);
-          color: white;
-          border: 1px solid #ffd400;
-          padding: 8px 14px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: bold;
+          background:
+            rgba(5, 0, 2, 0.8);
+
+          color:
+            #e8d9dc;
+
+          border:
+            1px solid
+            #761222;
+
+          padding:
+            8px 14px;
+
+          border-radius:
+            8px;
+
+          cursor:
+            pointer;
+
+          font-weight:
+            bold;
+
+          box-shadow:
+            none;
+        }
+
+        .languageBox button:hover {
+          border-color:
+            #d92746;
         }
 
         .languageBox .activeLang {
-          background: #ffd400;
-          color: #000;
+          background:
+            linear-gradient(
+              135deg,
+              #700716,
+              #b81430
+            );
+
+          border-color:
+            #d72a47;
+
+          color:
+            white;
+
+          box-shadow:
+            0 0 15px
+            rgba(190, 20, 45, 0.4);
         }
 
         .hero {
           width: 100%;
           height: 820px;
-          background-image: url("/season4-bg.png");
-          background-size: contain;
-          background-position: top center;
-          background-repeat: no-repeat;
-          background-color: #050505;
+
+          position: relative;
+
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          text-align: center;
+
+          background-image:
+            url("/season5-bg.png");
+
+          background-size:
+            contain;
+
+          background-position:
+            top center;
+
+          background-repeat:
+            no-repeat;
+
+          background-color:
+            #030102;
+
+          overflow:
+            hidden;
         }
 
-        .infoSection {
-          padding: 60px 20px 100px;
-          max-width: 1300px;
-          margin: 0 auto;
+        .heroShade {
+          position: absolute;
+          inset: 0;
+
+          background:
+            linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0.05) 0%,
+              rgba(5, 0, 2, 0.12) 55%,
+              rgba(3, 1, 2, 0.95) 100%
+            );
+
+          pointer-events:
+            none;
+        }
+
+        .heroContent {
+          position: relative;
+
+          z-index: 2;
+
+          margin-top:
+            60px;
+
+          padding:
+            30px;
+
+          text-shadow:
+            0 3px 15px
+            rgba(0, 0, 0, 1);
+        }
+
+        .seasonLabel {
+          display:
+            inline-block;
+
+          color:
+            #ef3956;
+
+          border-top:
+            1px solid
+            #a61a32;
+
+          border-bottom:
+            1px solid
+            #a61a32;
+
+          padding:
+            8px 30px;
+
+          letter-spacing:
+            8px;
+
+          font-size:
+            18px;
+
+          font-weight:
+            bold;
+
+          margin-bottom:
+            20px;
+        }
+
+        .hero h1 {
+          margin: 0;
+
+          font-size:
+            82px;
+
+          letter-spacing:
+            8px;
+
+          font-weight:
+            900;
+
+          color:
+            #ffffff;
+
+          text-shadow:
+            0 0 15px
+            rgba(0, 0, 0, 1),
+            0 0 30px
+            rgba(130, 0, 20, 0.5);
+        }
+
+        .heroDivider {
+          height:
+            2px;
+
+          width:
+            150px;
+
+          margin:
+            22px auto;
+
+          background:
+            linear-gradient(
+              90deg,
+              transparent,
+              #c81737,
+              transparent
+            );
+
+          box-shadow:
+            0 0 12px
+            rgba(200, 20, 55, 0.7);
+        }
+
+        .hero h3 {
+          margin:
+            0 0 15px;
+
+          color:
+            #df2948;
+
+          font-size:
+            29px;
+
+          letter-spacing:
+            7px;
+
+          font-weight:
+            700;
+        }
+
+        .heroContent p {
+          color:
+            #e7d5d8;
+
+          font-size:
+            19px;
+
+          letter-spacing:
+            4px;
+
+          margin:
+            0 0 35px;
+        }
+
+        .heroButton {
+          display:
+            inline-block;
+
+          color:
+            white;
+
+          text-decoration:
+            none;
+
+          padding:
+            15px 32px;
+
+          border:
+            1px solid
+            #b51b35;
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(80, 5, 18, 0.9),
+              rgba(160, 15, 42, 0.9)
+            );
+
+          border-radius:
+            8px;
+
+          font-size:
+            15px;
+
+          font-weight:
+            bold;
+
+          letter-spacing:
+            2px;
+
+          box-shadow:
+            0 0 20px
+            rgba(180, 15, 45, 0.35);
+
+          transition:
+            0.25s;
+        }
+
+        .heroButton:hover {
+          transform:
+            translateY(-2px);
+
+          box-shadow:
+            0 0 30px
+            rgba(210, 25, 55, 0.55);
+        }
+
+        .sectionSymbol {
+          text-align:
+            center;
+
+          color:
+            #a91531;
+
+          margin-bottom:
+            13px;
+
+          font-size:
+            18px;
+
+          text-shadow:
+            0 0 12px
+            rgba(200, 20, 50, 0.8);
         }
 
         h2 {
-          text-align: center;
-          font-size: 46px;
-          margin-bottom: 45px;
-          color: #ffd400;
+          text-align:
+            center;
+
+          font-size:
+            43px;
+
+          margin-top:
+            0;
+
+          margin-bottom:
+            35px;
+
+          color:
+            #e5314e;
+
+          letter-spacing:
+            2px;
+
+          text-shadow:
+            0 0 18px
+            rgba(150, 15, 40, 0.3);
+        }
+
+        .infoSection {
+          padding:
+            75px 20px 110px;
+
+          max-width:
+            1300px;
+
+          margin:
+            0 auto;
         }
 
         .mainText {
-          text-align: center;
-          color: #d0d0d0;
-          line-height: 1.9;
-          font-size: 21px;
-          max-width: 900px;
-          margin: 0 auto 70px;
+          text-align:
+            center;
+
+          color:
+            #c9b9bc;
+
+          line-height:
+            1.9;
+
+          font-size:
+            20px;
+
+          max-width:
+            920px;
+
+          margin:
+            0 auto 70px;
         }
 
         .infoBox {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 28px;
+          display:
+            grid;
+
+          grid-template-columns:
+            repeat(
+              auto-fit,
+              minmax(260px, 1fr)
+            );
+
+          gap:
+            25px;
         }
 
         .card {
-          background: #161616;
-          padding: 38px;
-          border-radius: 18px;
-          border: 1px solid #333;
-          box-shadow: 0 0 18px rgba(255, 212, 0, 0.12);
+          position:
+            relative;
+
+          background:
+            linear-gradient(
+              145deg,
+              #130608,
+              #090304
+            );
+
+          padding:
+            35px;
+
+          border-radius:
+            15px;
+
+          border:
+            1px solid
+            #351017;
+
+          box-shadow:
+            0 8px 30px
+            rgba(0, 0, 0, 0.35);
+
+          overflow:
+            hidden;
+
+          transition:
+            transform 0.25s,
+            border-color 0.25s,
+            box-shadow 0.25s;
+        }
+
+        .card:before {
+          content:
+            "";
+
+          position:
+            absolute;
+
+          top: 0;
+          left: 0;
+
+          height:
+            2px;
+
+          width:
+            100%;
+
+          background:
+            linear-gradient(
+              90deg,
+              transparent,
+              #9c1029,
+              transparent
+            );
+        }
+
+        .card:hover {
+          transform:
+            translateY(-5px);
+
+          border-color:
+            #711629;
+
+          box-shadow:
+            0 12px 35px
+            rgba(130, 0, 25, 0.2);
+        }
+
+        .cardIcon {
+          color:
+            #a91d35;
+
+          font-size:
+            30px;
+
+          margin-bottom:
+            18px;
+
+          text-shadow:
+            0 0 15px
+            rgba(190, 20, 50, 0.6);
         }
 
         .card h3 {
-          color: #ffd400;
-          margin-bottom: 18px;
-          font-size: 24px;
+          color:
+            #e32d4b;
+
+          margin:
+            0 0 18px;
+
+          font-size:
+            22px;
         }
 
         .card p {
-          font-size: 18px;
-          line-height: 1.8;
-          margin-bottom: 20px;
-          color: white;
+          font-size:
+            17px;
+
+          line-height:
+            1.8;
+
+          margin-bottom:
+            18px;
+
+          color:
+            #f1e5e7;
         }
 
         .card span {
-          color: #bbbbbb;
-          line-height: 1.7;
-          font-size: 15px;
+          color:
+            #a9999c;
+
+          line-height:
+            1.7;
+
+          font-size:
+            15px;
+        }
+
+        .allianceNames {
+          font-size:
+            22px !important;
+
+          font-weight:
+            800;
+
+          letter-spacing:
+            1px;
+
+          color:
+            white !important;
+        }
+
+        .separator {
+          color:
+            #8d1b2d !important;
+        }
+
+        .allianceSection {
+          padding:
+            90px 20px 110px;
+
+          background:
+            linear-gradient(
+              to bottom,
+              #070203,
+              #100407,
+              #070203
+            );
+
+          border-top:
+            1px solid
+            #21080e;
+
+          border-bottom:
+            1px solid
+            #21080e;
+        }
+
+        .allianceIntro {
+          text-align:
+            center;
+
+          color:
+            #aa979b;
+
+          font-size:
+            18px;
+
+          margin:
+            -10px auto 55px;
+        }
+
+        .allianceGrid {
+          max-width:
+            1000px;
+
+          margin:
+            0 auto;
+
+          display:
+            grid;
+
+          grid-template-columns:
+            repeat(3, 1fr);
+
+          gap:
+            28px;
+        }
+
+        .allianceBox {
+          text-align:
+            center;
+
+          padding:
+            38px 20px;
+
+          border:
+            1px solid
+            #3b111b;
+
+          border-radius:
+            15px;
+
+          background:
+            linear-gradient(
+              145deg,
+              rgba(25, 6, 10, 0.95),
+              rgba(8, 2, 4, 0.95)
+            );
+
+          box-shadow:
+            0 0 25px
+            rgba(90, 0, 20, 0.15);
+
+          transition:
+            0.25s;
+        }
+
+        .allianceBox:hover {
+          transform:
+            translateY(-6px);
+
+          border-color:
+            #971a31;
+
+          box-shadow:
+            0 0 30px
+            rgba(140, 10, 35, 0.25);
+        }
+
+        .allianceLogo {
+          width:
+            75px;
+
+          height:
+            75px;
+
+          margin:
+            0 auto 20px;
+
+          display:
+            flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          border-radius:
+            50%;
+
+          border:
+            2px solid
+            #8f1930;
+
+          color:
+            #f5dfe3;
+
+          font-weight:
+            900;
+
+          font-size:
+            30px;
+
+          background:
+            radial-gradient(
+              circle,
+              #4f0715,
+              #100306
+            );
+
+          box-shadow:
+            0 0 25px
+            rgba(150, 10, 35, 0.35);
+        }
+
+        .allianceBox h3 {
+          margin:
+            0 0 8px;
+
+          color:
+            #eb3854;
+
+          font-size:
+            29px;
+
+          letter-spacing:
+            3px;
+        }
+
+        .allianceBox p {
+          margin:
+            0;
+
+          color:
+            #9b8b8e;
+
+          font-size:
+            14px;
+
+          text-transform:
+            uppercase;
+
+          letter-spacing:
+            2px;
         }
 
         .applySection {
-          padding: 30px 20px 100px;
-          background: #101010;
+          padding:
+            85px 20px 110px;
+
+          background:
+            radial-gradient(
+              circle at top,
+              #150408,
+              #050203 55%
+            );
+        }
+
+        .applicationIntro {
+          text-align:
+            center;
+
+          color:
+            #aa969a;
+
+          font-size:
+            17px;
+
+          margin:
+            -10px 0 45px;
         }
 
         .form {
-          max-width: 720px;
-          margin: 0 auto;
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
+          max-width:
+            720px;
+
+          margin:
+            0 auto;
+
+          display:
+            flex;
+
+          flex-direction:
+            column;
+
+          gap:
+            19px;
+
+          padding:
+            38px;
+
+          background:
+            rgba(13, 4, 6, 0.85);
+
+          border:
+            1px solid
+            #351019;
+
+          border-radius:
+            18px;
+
+          box-shadow:
+            0 15px 45px
+            rgba(0, 0, 0, 0.45);
         }
 
         input,
         select,
         textarea {
-          padding: 17px;
-          border-radius: 12px;
-          border: 1px solid #333;
-          background: #1b1b1b;
-          color: white;
-          font-size: 16px;
+          width:
+            100%;
+
+          padding:
+            17px;
+
+          border-radius:
+            9px;
+
+          border:
+            1px solid
+            #351218;
+
+          background:
+            #10070a;
+
+          color:
+            #f8eeee;
+
+          font-size:
+            16px;
+
+          outline:
+            none;
+
+          transition:
+            border-color 0.2s,
+            box-shadow 0.2s;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+          color:
+            #79696d;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+          border-color:
+            #a11b33;
+
+          box-shadow:
+            0 0 12px
+            rgba(170, 20, 45, 0.18);
+        }
+
+        select {
+          color:
+            #bbaaac;
         }
 
         textarea {
-          min-height: 160px;
+          min-height:
+            160px;
+
+          resize:
+            vertical;
         }
 
-        button {
-          background: #ffd400;
-          color: #000;
-          padding: 17px;
-          border: none;
-          border-radius: 12px;
-          font-weight: bold;
-          font-size: 17px;
-          cursor: pointer;
-          box-shadow: 0 0 18px rgba(255, 212, 0, 0.4);
+        .submitButton {
+          background:
+            linear-gradient(
+              135deg,
+              #650613,
+              #bd1835
+            );
+
+          color:
+            white;
+
+          padding:
+            17px;
+
+          border:
+            1px solid
+            #d02947;
+
+          border-radius:
+            9px;
+
+          font-weight:
+            800;
+
+          font-size:
+            16px;
+
+          letter-spacing:
+            1.5px;
+
+          cursor:
+            pointer;
+
+          box-shadow:
+            0 0 20px
+            rgba(165, 15, 40, 0.32);
+
+          transition:
+            transform 0.2s,
+            box-shadow 0.2s;
+        }
+
+        .submitButton:hover {
+          transform:
+            translateY(-2px);
+
+          box-shadow:
+            0 0 28px
+            rgba(200, 20, 50, 0.45);
+        }
+
+        .submitButton:disabled {
+          opacity:
+            0.65;
+
+          cursor:
+            default;
+
+          transform:
+            none;
         }
 
         footer {
-          text-align: center;
-          padding: 45px;
-          color: #777;
-          border-top: 1px solid #222;
+          text-align:
+            center;
+
+          padding:
+            55px 20px;
+
+          background:
+            #030102;
+
+          border-top:
+            1px solid
+            #260910;
+        }
+
+        .footerTitle {
+          color:
+            #e33250;
+
+          font-size:
+            23px;
+
+          font-weight:
+            900;
+
+          letter-spacing:
+            5px;
+
+          margin-bottom:
+            8px;
+        }
+
+        .footerSeason {
+          color:
+            #8d747a;
+
+          font-size:
+            12px;
+
+          letter-spacing:
+            2px;
+
+          margin-bottom:
+            16px;
+        }
+
+        .footerAlliances {
+          color:
+            #c29ca4;
+
+          font-size:
+            14px;
+
+          letter-spacing:
+            2px;
+
+          margin-bottom:
+            28px;
+        }
+
+        .copyright {
+          color:
+            #55494c;
+
+          font-size:
+            12px;
         }
 
         @media (max-width: 768px) {
+
           .languageBox {
-            top: 10px;
-            right: 10px;
+            top:
+              10px;
+
+            right:
+              10px;
           }
 
           .languageBox button {
-            padding: 7px 10px;
-            font-size: 12px;
+            padding:
+              7px 10px;
+
+            font-size:
+              12px;
           }
 
           .hero {
-            height: 260px;
-            background-size: contain;
-            background-position: top center;
+            height:
+              320px;
+
+            background-size:
+              contain;
+
+            background-position:
+              top center;
+
+            align-items:
+              flex-end;
+          }
+
+          .heroContent {
+            display:
+              none;
           }
 
           .infoSection {
-            padding: 50px 16px 70px;
-          }
-
-          .applySection {
-            padding: 20px 16px 70px;
+            padding:
+              50px 16px 70px;
           }
 
           h2 {
-            font-size: 30px;
-            margin-bottom: 30px;
+            font-size:
+              29px;
+
+            margin-bottom:
+              28px;
           }
 
           .mainText {
-            font-size: 17px;
-            line-height: 1.8;
-            margin-bottom: 50px;
+            font-size:
+              16px;
+
+            line-height:
+              1.8;
+
+            margin-bottom:
+              45px;
+          }
+
+          .infoBox {
+            grid-template-columns:
+              1fr;
           }
 
           .card {
-            padding: 28px;
+            padding:
+              28px;
           }
 
           .card h3 {
-            font-size: 21px;
+            font-size:
+              20px;
           }
 
           .card p {
-            font-size: 16px;
+            font-size:
+              16px;
+          }
+
+          .allianceNames {
+            font-size:
+              19px !important;
+          }
+
+          .allianceSection {
+            padding:
+              65px 16px 75px;
+          }
+
+          .allianceGrid {
+            grid-template-columns:
+              1fr;
+
+            max-width:
+              420px;
+          }
+
+          .allianceBox {
+            padding:
+              28px 20px;
+          }
+
+          .allianceLogo {
+            width:
+              65px;
+
+            height:
+              65px;
+
+            font-size:
+              25px;
+          }
+
+          .applySection {
+            padding:
+              60px 16px 75px;
+          }
+
+          .form {
+            padding:
+              25px 18px;
+
+            gap:
+              16px;
           }
 
           .customPopup {
-            width: 260px;
-            padding: 32px 20px;
+            width:
+              260px;
+
+            padding:
+              32px 20px;
           }
 
           .popupIcon {
-            width: 60px;
-            height: 60px;
-            font-size: 36px;
+            width:
+              60px;
+
+            height:
+              60px;
+
+            font-size:
+              36px;
           }
 
           .popupMessage {
-            font-size: 20px;
+            font-size:
+              20px;
           }
         }
+
+        @media (
+          min-width: 769px
+        ) and (
+          max-width: 1200px
+        ) {
+
+          .hero {
+            height:
+              650px;
+          }
+
+          .hero h1 {
+            font-size:
+              65px;
+          }
+
+          .allianceGrid {
+            grid-template-columns:
+              repeat(2, 1fr);
+          }
+        }
+
       `}</style>
+
     </main>
   );
 }
