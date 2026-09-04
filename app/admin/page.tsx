@@ -147,6 +147,25 @@ export default function AdminPage() {
     alert("Deleted successfully.");
   }
 
+  async function handleT10Change(id: number, value: boolean) {
+    const { error } = await supabase
+      .from("applications")
+      .update({ t10: value })
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      alert("T10 update failed.");
+      return;
+    }
+
+    setData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, t10: value } : item
+      )
+    );
+  }
+
   function parsePower(power: string) {
     if (!power) return 0;
 
@@ -458,14 +477,24 @@ export default function AdminPage() {
                 </td>
 
                 <td style={tdStyle}>
-                  <span
+                  <select
+                    value={item.t10 ? "yes" : "no"}
+                    onChange={(e) =>
+                      handleT10Change(
+                        item.id,
+                        e.target.value === "yes"
+                      )
+                    }
                     style={{
-                      ...t10BadgeStyle,
-                      ...(item.t10 ? t10YesStyle : t10NoStyle),
+                      ...t10SelectStyle,
+                      ...(item.t10
+                        ? t10SelectYesStyle
+                        : t10SelectNoStyle),
                     }}
                   >
-                    {item.t10 ? "YES" : "NO"}
-                  </span>
+                    <option value="yes">YES</option>
+                    <option value="no">NO</option>
+                  </select>
                 </td>
 
                 <td style={tdStyle}>
@@ -641,23 +670,22 @@ const messageTdStyle: React.CSSProperties = {
   minWidth: "250px",
 };
 
-const t10BadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  minWidth: "48px",
-  padding: "6px 10px",
-  borderRadius: "999px",
-  textAlign: "center",
-  fontSize: "12px",
+const t10SelectStyle: React.CSSProperties = {
+  minWidth: "78px",
+  padding: "8px 10px",
+  borderRadius: "8px",
   fontWeight: "bold",
+  cursor: "pointer",
+  outline: "none",
 };
 
-const t10YesStyle: React.CSSProperties = {
+const t10SelectYesStyle: React.CSSProperties = {
   backgroundColor: "#173c22",
   color: "#7dff9b",
   border: "1px solid #2d8f46",
 };
 
-const t10NoStyle: React.CSSProperties = {
+const t10SelectNoStyle: React.CSSProperties = {
   backgroundColor: "#3a1717",
   color: "#ff8585",
   border: "1px solid #8f2d2d",
