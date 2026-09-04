@@ -226,7 +226,8 @@ export default function AdminPage() {
     const headers = [
       "Name",
       "Server",
-      "Power",
+      "1st Army Power",
+      "T10",
       "Alliance",
       "Migration Grade",
       "Message",
@@ -237,6 +238,7 @@ export default function AdminPage() {
       item.name || "",
       item.server || "",
       item.power || "",
+      item.t10 ? "YES" : "NO",
       item.alliance || "",
       item.migration_grade || "",
       item.message || "",
@@ -344,7 +346,7 @@ export default function AdminPage() {
       <div style={topBarStyle}>
         <input
           type="text"
-          placeholder="Search name, server, alliance, power..."
+          placeholder="Search name, server, alliance, 1st army power..."
           value={search}
           onChange={(e) =>
             setSearch(e.target.value)
@@ -396,11 +398,11 @@ export default function AdminPage() {
           </option>
 
           <option value="power_high">
-            Power High → Low
+            1st Army Power High → Low
           </option>
 
           <option value="power_low">
-            Power Low → High
+            1st Army Power Low → High
           </option>
 
           <option value="name_asc">
@@ -430,7 +432,8 @@ export default function AdminPage() {
             <tr>
               <th style={thStyle}>Name</th>
               <th style={thStyle}>Server</th>
-              <th style={thStyle}>Power</th>
+              <th style={thStyle}>1st Army Power</th>
+              <th style={thStyle}>T10</th>
               <th style={thStyle}>Alliance</th>
               <th style={thStyle}>Grade</th>
               <th style={thStyle}>Message</th>
@@ -452,6 +455,17 @@ export default function AdminPage() {
 
                 <td style={tdStyle}>
                   {item.power}
+                </td>
+
+                <td style={tdStyle}>
+                  <span
+                    style={{
+                      ...t10BadgeStyle,
+                      ...(item.t10 ? t10YesStyle : t10NoStyle),
+                    }}
+                  >
+                    {item.t10 ? "YES" : "NO"}
+                  </span>
                 </td>
 
                 <td style={tdStyle}>
@@ -490,7 +504,7 @@ export default function AdminPage() {
             {filteredData.length === 0 && (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   style={emptyStyle}
                 >
                   No applications found.
@@ -600,7 +614,7 @@ const tableWrapStyle: React.CSSProperties = {
 const tableStyle: React.CSSProperties = {
   width: "100%",
   borderCollapse: "collapse",
-  minWidth: "1000px",
+  minWidth: "1150px",
   backgroundColor: "#111",
 };
 
@@ -625,6 +639,28 @@ const messageTdStyle: React.CSSProperties = {
   padding: "14px",
   color: "white",
   minWidth: "250px",
+};
+
+const t10BadgeStyle: React.CSSProperties = {
+  display: "inline-block",
+  minWidth: "48px",
+  padding: "6px 10px",
+  borderRadius: "999px",
+  textAlign: "center",
+  fontSize: "12px",
+  fontWeight: "bold",
+};
+
+const t10YesStyle: React.CSSProperties = {
+  backgroundColor: "#173c22",
+  color: "#7dff9b",
+  border: "1px solid #2d8f46",
+};
+
+const t10NoStyle: React.CSSProperties = {
+  backgroundColor: "#3a1717",
+  color: "#ff8585",
+  border: "1px solid #8f2d2d",
 };
 
 const deleteButtonStyle: React.CSSProperties = {
