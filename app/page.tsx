@@ -12,6 +12,7 @@ export default function Home() {
     power: "",
     alliance: "",
     migration_grade: "",
+    t10: false,
     message: "",
   });
 
@@ -72,11 +73,13 @@ export default function Home() {
 
       server: "Current Server",
 
-      power: "Power",
+      power: "1st Army Power",
 
       alliance: "Current Alliance",
 
       grade: "Select Migration Grade",
+
+      t10: "T10 Available",
 
       message: "Introduce yourself",
 
@@ -133,11 +136,13 @@ export default function Home() {
 
       server: "현재 서버",
 
-      power: "전투력",
+      power: "1군 전투력",
 
       alliance: "현재 연맹",
 
       grade: "이민 등급 선택",
+
+      t10: "T10 여부",
 
       message: "자기소개",
 
@@ -156,9 +161,14 @@ export default function Home() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) {
+    const target = e.target;
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value,
+      [target.name]:
+        target instanceof HTMLInputElement && target.type === "checkbox"
+          ? target.checked
+          : target.value,
     });
   }
 
@@ -192,6 +202,7 @@ export default function Home() {
         power: form.power,
         alliance: form.alliance,
         migration_grade: form.migration_grade,
+        t10: form.t10,
         message: form.message,
       },
     ]);
@@ -212,6 +223,7 @@ export default function Home() {
       power: "",
       alliance: "",
       migration_grade: "",
+      t10: false,
       message: "",
     });
   }
@@ -594,6 +606,17 @@ export default function Home() {
               Regular (일반)
             </option>
           </select>
+
+          <label className="checkboxRow">
+            <input
+              type="checkbox"
+              name="t10"
+              checked={form.t10}
+              onChange={handleChange}
+            />
+
+            <span>{t.t10}</span>
+          </label>
 
           <textarea
             name="message"
@@ -1613,6 +1636,53 @@ export default function Home() {
         select {
           color:
             #bbaaac;
+        }
+
+        .checkboxRow {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          padding: 14px 16px;
+
+          border:
+            1px solid
+            #351218;
+
+          background:
+            #10070a;
+
+          border-radius:
+            9px;
+
+          color:
+            #d8c5c9;
+
+          font-size:
+            15px;
+
+          cursor:
+            pointer;
+        }
+
+        .checkboxRow input {
+          width: 19px;
+          height: 19px;
+          margin: 0;
+
+          accent-color:
+            #b81734;
+
+          cursor:
+            pointer;
+        }
+
+        .checkboxRow span {
+          font-weight:
+            700;
+
+          letter-spacing:
+            0.5px;
         }
 
         textarea {
