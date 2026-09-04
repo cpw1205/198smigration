@@ -1756,153 +1756,162 @@ export default function Home() {
         @media (max-width: 768px) {
 
           .languageBox {
-            top:
-              10px;
-
-            right:
-              10px;
+            top: 10px;
+            right: 10px;
+            gap: 6px;
           }
 
           .languageBox button {
-            padding:
-              7px 10px;
-
-            font-size:
-              12px;
+            padding: 7px 11px;
+            font-size: 12px;
+            border-radius: 7px;
           }
 
           .hero {
-            height:
-              320px;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1.47 / 1;
 
-            background-size:
-              contain;
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
 
-            background-position:
-              top center;
+            align-items: center;
+            overflow: hidden;
+          }
 
-            align-items:
-              flex-end;
+          .heroShade {
+            background:
+              linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.03) 0%,
+                rgba(5, 0, 2, 0.08) 55%,
+                rgba(3, 1, 2, 0.42) 100%
+              );
           }
 
           .heroContent {
-            display:
-              none;
+            display: block;
+            width: 100%;
+            margin-top: 34px;
+            padding: 16px 12px 10px;
+
+            transform: scale(0.82);
+            transform-origin: center center;
+          }
+
+          .seasonLabel {
+            padding: 5px 18px;
+            letter-spacing: 5px;
+            font-size: 11px;
+            margin-bottom: 10px;
+          }
+
+          .hero h1 {
+            font-size: clamp(34px, 10vw, 46px);
+            letter-spacing: 4px;
+          }
+
+          .heroDivider {
+            width: 95px;
+            margin: 12px auto;
+          }
+
+          .hero h3 {
+            margin: 0 0 8px;
+            font-size: clamp(14px, 4.1vw, 18px);
+            letter-spacing: 3px;
+          }
+
+          .heroContent p {
+            font-size: 10px;
+            letter-spacing: 2px;
+            margin: 0 0 14px;
+          }
+
+          .heroButton {
+            padding: 10px 18px;
+            border-radius: 7px;
+            font-size: 10px;
+            letter-spacing: 1px;
           }
 
           .infoSection {
-            padding:
-              50px 16px 70px;
+            padding: 45px 16px 70px;
           }
 
           h2 {
-            font-size:
-              29px;
-
-            margin-bottom:
-              28px;
+            font-size: 29px;
+            margin-bottom: 28px;
           }
 
           .mainText {
-            font-size:
-              16px;
-
-            line-height:
-              1.8;
-
-            margin-bottom:
-              45px;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 45px;
           }
 
           .infoBox {
-            grid-template-columns:
-              1fr;
+            grid-template-columns: 1fr;
           }
 
           .card {
-            padding:
-              28px;
+            padding: 28px;
           }
 
           .card h3 {
-            font-size:
-              20px;
+            font-size: 20px;
           }
 
           .card p {
-            font-size:
-              16px;
+            font-size: 16px;
           }
 
           .allianceNames {
-            font-size:
-              19px !important;
+            font-size: 19px !important;
           }
 
           .allianceSection {
-            padding:
-              65px 16px 75px;
+            padding: 65px 16px 75px;
           }
 
           .allianceGrid {
-            grid-template-columns:
-              1fr;
-
-            max-width:
-              420px;
+            grid-template-columns: 1fr;
+            max-width: 420px;
           }
 
           .allianceBox {
-            padding:
-              28px 20px;
+            padding: 28px 20px;
           }
 
           .allianceLogo {
-            width:
-              65px;
-
-            height:
-              65px;
-
-            font-size:
-              25px;
+            width: 65px;
+            height: 65px;
+            font-size: 25px;
           }
 
           .applySection {
-            padding:
-              60px 16px 75px;
+            padding: 60px 16px 75px;
           }
 
           .form {
-            padding:
-              25px 18px;
-
-            gap:
-              16px;
+            padding: 25px 18px;
+            gap: 16px;
           }
 
           .customPopup {
-            width:
-              260px;
-
-            padding:
-              32px 20px;
+            width: 260px;
+            padding: 32px 20px;
           }
 
           .popupIcon {
-            width:
-              60px;
-
-            height:
-              60px;
-
-            font-size:
-              36px;
+            width: 60px;
+            height: 60px;
+            font-size: 36px;
           }
 
           .popupMessage {
-            font-size:
-              20px;
+            font-size: 20px;
           }
         }
 
