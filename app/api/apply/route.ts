@@ -13,12 +13,58 @@ const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
 
 const VALID_GRADES = ["Elite", "Advanced", "Medium", "Regular"];
 
+function getClientIp(req: Request) {
+  const forwardedFor = req.headers.get("x-forwarded-for");
+
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  const realIp = req.headers.get("x-real-ip");
+
+  if (realIp) {
+    return realIp.trim();
+  }
+
+  return "unknown";
+}
+
 export async function POST(req: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
       return NextResponse.json(
         { error: "Server configuration error." },
         { status: 500 }
+      );
+    }
+
+    const ip = getClientIp(req);
+
+    const { data: rateAllowed, error: rateError } = await supabaseAdmin.rpc(
+      "check_application_rate_limit",
+      {
+        p_key: `application:${ip}`,
+        p_limit: 10,
+        p_window_seconds: 600,
+      }
+    );
+
+    if (rateError) {
+      console.error("Rate limit error:", rateError);
+
+      return NextResponse.json(
+        { error: "Unable to process request." },
+        { status: 500 }
+      );
+    }
+
+    if (rateAllowed !== true) {
+      return NextResponse.json(
+        {
+          error:
+            "Too many applications. Please wait a few minutes and try again.",
+        },
+        { status: 429 }
       );
     }
 
@@ -46,7 +92,6 @@ export async function POST(req: Request) {
 
     const t10 = body.t10 === true;
 
-    // Name
     if (!name || name.length > 40) {
       return NextResponse.json(
         { error: "Invalid name." },
@@ -54,7 +99,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Server number
     if (!/^\d{1,4}$/.test(server)) {
       return NextResponse.json(
         { error: "Invalid server number." },
@@ -62,7 +106,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1st Army Power
     if (!power || power.length > 30) {
       return NextResponse.json(
         { error: "Invalid power." },
@@ -70,7 +113,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Alliance
     if (alliance.length > 30) {
       return NextResponse.json(
         { error: "Invalid alliance." },
@@ -78,7 +120,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Migration Grade
     if (!VALID_GRADES.includes(migrationGrade)) {
       return NextResponse.json(
         { error: "Invalid migration grade." },
@@ -86,7 +127,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Message
     if (message.length > 1000) {
       return NextResponse.json(
         { error: "Message is too long." },
