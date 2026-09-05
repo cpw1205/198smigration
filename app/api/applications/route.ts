@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function GET(req: Request) {
-  const password = req.headers.get("x-admin-password");
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const password = req.headers.get("x-admin-password")?.trim();
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
 
   if (!adminPassword) {
     return NextResponse.json(
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
   if (password !== adminPassword) {
     return NextResponse.json(
-      { error: "Unauthorized", envLoaded: true },
+      { error: "Unauthorized" },
       { status: 401 }
     );
   }
@@ -25,7 +25,10 @@ export async function GET(req: Request) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json(data);
