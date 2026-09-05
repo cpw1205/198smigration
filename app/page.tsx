@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const [lang, setLang] = useState<"en" | "ko">("en");
@@ -193,39 +192,52 @@ export default function Home() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (loading) return;
+
     setLoading(true);
 
-    const { error } = await supabase.from("applications").insert([
-      {
-        name: form.name,
-        server: form.server,
-        power: form.power,
-        alliance: form.alliance,
-        migration_grade: form.migration_grade,
-        t10: form.t10,
-        message: form.message,
-      },
-    ]);
+    try {
+      const response = await fetch("/api/apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          server: form.server,
+          power: form.power,
+          alliance: form.alliance,
+          migration_grade: form.migration_grade,
+          t10: form.t10,
+          message: form.message,
+        }),
+      });
 
-    setLoading(false);
+      const result = await response.json().catch(() => null);
 
-    if (error) {
-      console.error(error);
+      if (!response.ok) {
+        console.error("Application submission failed:", result);
+        showPopup("error", t.failed);
+        return;
+      }
+
+      showPopup("success", t.success);
+
+      setForm({
+        name: "",
+        server: "",
+        power: "",
+        alliance: "",
+        migration_grade: "",
+        t10: false,
+        message: "",
+      });
+    } catch (error) {
+      console.error("Application submission error:", error);
       showPopup("error", t.failed);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    showPopup("success", t.success);
-
-    setForm({
-      name: "",
-      server: "",
-      power: "",
-      alliance: "",
-      migration_grade: "",
-      t10: false,
-      message: "",
-    });
   }
 
   return (
