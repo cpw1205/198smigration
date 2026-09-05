@@ -13,11 +13,23 @@ export async function GET(req: Request) {
   }
 
   if (password !== adminPassword) {
+    let firstDifferentPosition = -1;
+
+    const maxLength = Math.max(password.length, adminPassword.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      if (password[i] !== adminPassword[i]) {
+        firstDifferentPosition = i + 1;
+        break;
+      }
+    }
+
     return NextResponse.json(
       {
         error: "Unauthorized",
         inputLength: password.length,
         serverLength: adminPassword.length,
+        firstDifferentPosition,
       },
       { status: 401 }
     );
