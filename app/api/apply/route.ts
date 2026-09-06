@@ -32,6 +32,8 @@ function getClientIp(req: Request) {
 export async function POST(req: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
+      console.error("Missing Supabase environment variables");
+
       return NextResponse.json(
         { error: "Server configuration error." },
         { status: 500 }
@@ -41,22 +43,31 @@ export async function POST(req: Request) {
     const ip = getClientIp(req);
     const userAgent = req.headers.get("user-agent") ?? "";
 
-    // 모든 신청 요청의 IP / User-Agent 기록
-    const { error: logError } = await supabaseAdmin
+    console.log("APPLICATION REQUEST IP:", ip);
+
+    // 요청 로그 저장
+    const { data: logData, error: logError } = await supabaseAdmin
       .from("application_request_logs")
-      .insert([
-        {
-          ip_address: ip,
-          user_agent: userAgent.slice(0, 500),
-          request_path: "/api/apply",
-        },
-      ]);
+      .insert({
+        ip_address: ip,
+        user_agent: userAgent.slice(0, 500),
+        request_path: "/api/apply",
+      })
+      .select("id, ip_address")
+      .single();
 
     if (logError) {
-      console.error("Request log error:", logError);
+      console.error("REQUEST LOG INSERT FAILED:", {
+        message: logError.message,
+        details: logError.details,
+        hint: logError.hint,
+        code: logError.code,
+      });
+    } else {
+      console.log("REQUEST LOG SAVED:", logData);
     }
 
-    // 기존 Rate Limit
+    // Rate Limit
     const { data: rateAllowed, error: rateError } = await supabaseAdmin.rpc(
       "check_application_rate_limit",
       {
@@ -67,7 +78,7 @@ export async function POST(req: Request) {
     );
 
     if (rateError) {
-      console.error("Rate limit error:", rateError);
+      console.error("RATE LIMIT ERROR:", rateError);
 
       return NextResponse.json(
         { error: "Unable to process request." },
@@ -76,6 +87,8 @@ export async function POST(req: Request) {
     }
 
     if (rateAllowed !== true) {
+      console.log("RATE LIMITED IP:", ip);
+
       return NextResponse.json(
         {
           error:
@@ -151,28 +164,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const { error } = await supabaseAdmin
+    const { error: applicationError } = await supabaseAdmin
       .from("applications")
-      .insert([
-        {
-          name,
-          server,
-          power,
-          alliance,
-          migration_grade: migrationGrade,
-          message,
-          t10,
-        },
-      ]);
+      .insert({
+        name,
+        server,
+        power,
+        alliance,
+        migration_grade: migrationGrade,
+        message,
+        t10,
+      });
 
-    if (error) {
-      console.error("Supabase insert error:", error);
+    if (applicationError) {
+      console.error("APPLICATION INSERT ERROR:", applicationError);
 
       return NextResponse.json(
         { error: "Failed to submit application." },
         { status: 500 }
       );
     }
+
+    console.log("APPLICATION SAVED FROM IP:", ip);
 
     return NextResponse.json(
       {
@@ -182,7 +195,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Application API error:", error);
+    console.error("APPLICATION API ERROR:", error);
 
     return NextResponse.json(
       { error: "Invalid request." },
