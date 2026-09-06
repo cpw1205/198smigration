@@ -39,7 +39,24 @@ export async function POST(req: Request) {
     }
 
     const ip = getClientIp(req);
+    const userAgent = req.headers.get("user-agent") ?? "";
 
+    // 모든 신청 요청의 IP / User-Agent 기록
+    const { error: logError } = await supabaseAdmin
+      .from("application_request_logs")
+      .insert([
+        {
+          ip_address: ip,
+          user_agent: userAgent.slice(0, 500),
+          request_path: "/api/apply",
+        },
+      ]);
+
+    if (logError) {
+      console.error("Request log error:", logError);
+    }
+
+    // 기존 Rate Limit
     const { data: rateAllowed, error: rateError } = await supabaseAdmin.rpc(
       "check_application_rate_limit",
       {
