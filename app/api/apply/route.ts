@@ -68,6 +68,7 @@ export async function POST(req: Request) {
     }
 
     // Rate Limit
+    // 같은 IP에서 10분 동안 최대 10회
     const { data: rateAllowed, error: rateError } = await supabaseAdmin.rpc(
       "check_application_rate_limit",
       {
@@ -122,7 +123,9 @@ export async function POST(req: Request) {
 
     const t10 = body.t10 === true;
 
-    // 기본 이름 검증
+    // -----------------------------
+    // 닉네임 검증
+    // -----------------------------
     if (!name || name.length > 40) {
       return NextResponse.json(
         { error: "Invalid name." },
@@ -130,8 +133,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // 스팸 이름 패턴 차단
-    // 예: Apex_522539744 / Titan_650481461 / Frost_684445496
+    // -----------------------------
+    // 스팸 닉네임 패턴 차단
+    // 예:
+    // Apex_522539744
+    // Titan_650481461
+    // Frost_684445496
+    // -----------------------------
     const spamNamePattern = /^[A-Za-z]+_[0-9]{6,12}$/;
 
     if (spamNamePattern.test(name)) {
@@ -146,13 +154,32 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!/^\d{1,4}$/.test(server)) {
+    // -----------------------------
+    // 서버 번호 검증
+    // 신청 가능 서버: 194 ~ 256
+    // -----------------------------
+    const serverNumber = Number(server);
+
+    if (
+      !/^\d{3}$/.test(server) ||
+      !Number.isInteger(serverNumber) ||
+      serverNumber < 194 ||
+      serverNumber > 256
+    ) {
+      console.log("INVALID SERVER BLOCKED:", {
+        ip,
+        server,
+      });
+
       return NextResponse.json(
-        { error: "Invalid server number." },
+        { error: "Server must be between 194 and 256." },
         { status: 400 }
       );
     }
 
+    // -----------------------------
+    // 1군 전투력 검증
+    // -----------------------------
     if (!power || power.length > 30) {
       return NextResponse.json(
         { error: "Invalid power." },
@@ -160,6 +187,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // -----------------------------
+    // 연맹명 검증
+    // -----------------------------
     if (alliance.length > 30) {
       return NextResponse.json(
         { error: "Invalid alliance." },
@@ -167,6 +197,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // -----------------------------
+    // 이민 등급 검증
+    // -----------------------------
     if (!VALID_GRADES.includes(migrationGrade)) {
       return NextResponse.json(
         { error: "Invalid migration grade." },
@@ -174,6 +207,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // -----------------------------
+    // 자기소개 길이 검증
+    // -----------------------------
     if (message.length > 1000) {
       return NextResponse.json(
         { error: "Message is too long." },
@@ -181,6 +217,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // -----------------------------
+    // 정상 신청만 DB 저장
+    // -----------------------------
     const { error: applicationError } = await supabaseAdmin
       .from("applications")
       .insert({
