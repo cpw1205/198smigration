@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createHmac, timingSafeEqual } from "crypto";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -29,6 +30,98 @@ function getClientIp(req: Request) {
   return "unknown";
 }
 
+function signTokenPayload(payload: string) {
+  return createHmac("sha256", serviceRoleKey)
+    .update(payload)
+    .digest("hex");
+}
+
+function verifyFormToken(token: string, ip: string) {
+  try {
+    const parts = token.split(".");
+
+    if (parts.length !== 4) {
+      return false;
+    }
+
+    const [tokenIpEncoded, timestampText, nonce, signature] = parts;
+
+    const tokenIp = Buffer.from(tokenIpEncoded, "base64url").toString("utf8");
+    const timestamp = Number(timestampText);
+
+    if (!tokenIp || !Number.isFinite(timestamp) || !nonce || !signature) {
+      return false;
+    }
+
+    if (tokenIp !== ip) {
+      return false;
+    }
+
+    const age = Date.now() - timestamp;
+
+    // Must spend at least 2 seconds on the form.
+    if (age < 2000) {
+      return false;
+    }
+
+    // Token expires after 30 minutes.
+    if (age > 30 * 60 * 1000) {
+      return false;
+    }
+
+    const payload = `${tokenIpEncoded}.${timestampText}.${nonce}`;
+    const expectedSignature = signTokenPayload(payload);
+
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+    const receivedBuffer = Buffer.from(signature, "hex");
+
+    if (expectedBuffer.length !== receivedBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(expectedBuffer, receivedBuffer);
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedBrowserRequest(req: Request) {
+  const origin = req.headers.get("origin");
+  const referer = req.headers.get("referer");
+  const secFetchSite = req.headers.get("sec-fetch-site");
+
+  const allowedHosts = new Set([
+    "www.198migration.com",
+    "198migration.com",
+  ]);
+
+  if (secFetchSite && secFetchSite !== "same-origin" && secFetchSite !== "same-site") {
+    return false;
+  }
+
+  if (origin) {
+    try {
+      const host = new URL(origin).hostname;
+      if (!allowedHosts.has(host)) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  } else if (referer) {
+    try {
+      const host = new URL(referer).hostname;
+      if (!allowedHosts.has(host)) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export async function POST(req: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
@@ -45,7 +138,7 @@ export async function POST(req: Request) {
 
     console.log("APPLICATION REQUEST IP:", ip);
 
-    // 요청 로그 저장
+    // Request log
     const { data: logData, error: logError } = await supabaseAdmin
       .from("application_request_logs")
       .insert({
@@ -67,8 +160,17 @@ export async function POST(req: Request) {
       console.log("REQUEST LOG SAVED:", logData);
     }
 
-    // Rate Limit
-    // 같은 IP에서 10분 동안 최대 10회
+    // Basic browser-origin check
+    if (!isAllowedBrowserRequest(req)) {
+      console.log("REQUEST ORIGIN BLOCKED:", ip);
+
+      return NextResponse.json(
+        { error: "Invalid request." },
+        { status: 403 }
+      );
+    }
+
+    // Rate Limit: same IP, max 10 requests per 10 minutes
     const { data: rateAllowed, error: rateError } = await supabaseAdmin.rpc(
       "check_application_rate_limit",
       {
@@ -123,9 +225,36 @@ export async function POST(req: Request) {
 
     const t10 = body.t10 === true;
 
-    // -----------------------------
-    // 닉네임 검증
-    // -----------------------------
+    const formToken =
+      typeof body.form_token === "string" ? body.form_token.trim() : "";
+
+    const website =
+      typeof body.website === "string" ? body.website.trim() : "";
+
+    // Honeypot: humans never fill this.
+    if (website) {
+      console.log("HONEYPOT BLOCKED:", {
+        ip,
+        website: website.slice(0, 100),
+      });
+
+      return NextResponse.json(
+        { error: "Invalid application." },
+        { status: 400 }
+      );
+    }
+
+    // Signed form token: blocks direct POSTs that did not load the real form.
+    if (!formToken || !verifyFormToken(formToken, ip)) {
+      console.log("FORM TOKEN BLOCKED:", ip);
+
+      return NextResponse.json(
+        { error: "Invalid application." },
+        { status: 403 }
+      );
+    }
+
+    // Name validation
     if (!name || name.length > 40) {
       return NextResponse.json(
         { error: "Invalid name." },
@@ -133,13 +262,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // 스팸 닉네임 패턴 차단
-    // 예:
-    // Apex_522539744
-    // Titan_650481461
-    // Frost_684445496
-    // -----------------------------
+    // Known spam-name format:
+    // Apex_522539744 / Titan_650481461 / Frost_684445496
     const spamNamePattern = /^[A-Za-z]+_[0-9]{6,12}$/;
 
     if (spamNamePattern.test(name)) {
@@ -154,10 +278,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // 서버 번호 검증
-    // 신청 가능 서버: 194 ~ 256
-    // -----------------------------
+    // Server range: 194 ~ 256 only
     const serverNumber = Number(server);
 
     if (
@@ -177,9 +298,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // 1군 전투력 검증
-    // -----------------------------
+    // 1st Army Power
     if (!power || power.length > 30) {
       return NextResponse.json(
         { error: "Invalid power." },
@@ -187,9 +306,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // 연맹명 검증
-    // -----------------------------
+    // Alliance
     if (alliance.length > 30) {
       return NextResponse.json(
         { error: "Invalid alliance." },
@@ -197,9 +314,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // 이민 등급 검증
-    // -----------------------------
+    // Migration grade
     if (!VALID_GRADES.includes(migrationGrade)) {
       return NextResponse.json(
         { error: "Invalid migration grade." },
@@ -207,9 +322,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // 자기소개 길이 검증
-    // -----------------------------
+    // Message
     if (message.length > 1000) {
       return NextResponse.json(
         { error: "Message is too long." },
@@ -217,9 +330,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // 정상 신청만 DB 저장
-    // -----------------------------
+    // Save only validated applications
     const { error: applicationError } = await supabaseAdmin
       .from("applications")
       .insert({
