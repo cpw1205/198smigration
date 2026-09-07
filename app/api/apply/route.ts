@@ -122,9 +122,26 @@ export async function POST(req: Request) {
 
     const t10 = body.t10 === true;
 
+    // 기본 이름 검증
     if (!name || name.length > 40) {
       return NextResponse.json(
         { error: "Invalid name." },
+        { status: 400 }
+      );
+    }
+
+    // 스팸 이름 패턴 차단
+    // 예: Apex_522539744 / Titan_650481461 / Frost_684445496
+    const spamNamePattern = /^[A-Za-z]+_[0-9]{6,12}$/;
+
+    if (spamNamePattern.test(name)) {
+      console.log("SPAM NAME BLOCKED:", {
+        ip,
+        name,
+      });
+
+      return NextResponse.json(
+        { error: "Invalid application." },
         { status: 400 }
       );
     }
