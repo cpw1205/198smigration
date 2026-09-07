@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [lang, setLang] = useState<"en" | "ko">("en");
@@ -16,6 +16,36 @@ export default function Home() {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // Anti-bot protection
+  const [formToken, setFormToken] = useState("");
+  const [honeypot, setHoneypot] = useState("");
+
+  async function loadFormToken() {
+    try {
+      const response = await fetch("/api/form-token", {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.token) {
+        console.error("Failed to load form token:", result);
+        setFormToken("");
+        return;
+      }
+
+      setFormToken(result.token);
+    } catch (error) {
+      console.error("Form token error:", error);
+      setFormToken("");
+    }
+  }
+
+  useEffect(() => {
+    loadFormToken();
+  }, []);
 
   const [popup, setPopup] = useState<{
     show: boolean;
@@ -194,6 +224,12 @@ export default function Home() {
 
     if (loading) return;
 
+    if (!formToken) {
+      showPopup("error", t.failed);
+      await loadFormToken();
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -210,6 +246,8 @@ export default function Home() {
           migration_grade: form.migration_grade,
           t10: form.t10,
           message: form.message,
+          form_token: formToken,
+          website: honeypot,
         }),
       });
 
@@ -232,6 +270,9 @@ export default function Home() {
         t10: false,
         message: "",
       });
+
+      setHoneypot("");
+      await loadFormToken();
     } catch (error) {
       console.error("Application submission error:", error);
       showPopup("error", t.failed);
@@ -556,6 +597,29 @@ export default function Home() {
           onSubmit={handleSubmit}
           className="form"
         >
+
+          {/* Anti-bot honeypot: real users never see or fill this field */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "-10000px",
+              width: "1px",
+              height: "1px",
+              overflow: "hidden",
+            }}
+          >
+            <label htmlFor="website">Website</label>
+            <input
+              id="website"
+              type="text"
+              name="website"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
 
           <input
             type="text"
