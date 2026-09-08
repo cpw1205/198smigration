@@ -15,6 +15,10 @@ const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
 
 const VALID_GRADES = ["Elite", "Advanced", "Medium", "Regular"];
 
+// ==================================================
+// Client IP
+// ==================================================
+
 function getClientIp(req: Request) {
   const forwardedFor = req.headers.get("x-forwarded-for");
 
@@ -30,6 +34,10 @@ function getClientIp(req: Request) {
 
   return "unknown";
 }
+
+// ==================================================
+// Signed form token
+// ==================================================
 
 function signTokenPayload(payload: string) {
   return createHmac("sha256", serviceRoleKey)
@@ -47,10 +55,19 @@ function verifyFormToken(token: string, ip: string) {
 
     const [tokenIpEncoded, timestampText, nonce, signature] = parts;
 
-    const tokenIp = Buffer.from(tokenIpEncoded, "base64url").toString("utf8");
+    const tokenIp = Buffer.from(
+      tokenIpEncoded,
+      "base64url"
+    ).toString("utf8");
+
     const timestamp = Number(timestampText);
 
-    if (!tokenIp || !Number.isFinite(timestamp) || !nonce || !signature) {
+    if (
+      !tokenIp ||
+      !Number.isFinite(timestamp) ||
+      !nonce ||
+      !signature
+    ) {
       return false;
     }
 
@@ -60,31 +77,55 @@ function verifyFormToken(token: string, ip: string) {
 
     const age = Date.now() - timestamp;
 
-    // Must spend at least 2 seconds on the form.
-    if (age < 2000) {
+    // --------------------------------------------------
+    // Must spend at least 5 seconds on the form
+    // --------------------------------------------------
+
+    if (age < 5000) {
       return false;
     }
 
-    // Token expires after 30 minutes.
+    // --------------------------------------------------
+    // Token expires after 30 minutes
+    // --------------------------------------------------
+
     if (age > 30 * 60 * 1000) {
       return false;
     }
 
-    const payload = `${tokenIpEncoded}.${timestampText}.${nonce}`;
+    const payload =
+      `${tokenIpEncoded}.${timestampText}.${nonce}`;
+
     const expectedSignature = signTokenPayload(payload);
 
-    const expectedBuffer = Buffer.from(expectedSignature, "hex");
-    const receivedBuffer = Buffer.from(signature, "hex");
+    const expectedBuffer = Buffer.from(
+      expectedSignature,
+      "hex"
+    );
 
-    if (expectedBuffer.length !== receivedBuffer.length) {
+    const receivedBuffer = Buffer.from(
+      signature,
+      "hex"
+    );
+
+    if (
+      expectedBuffer.length !== receivedBuffer.length
+    ) {
       return false;
     }
 
-    return timingSafeEqual(expectedBuffer, receivedBuffer);
+    return timingSafeEqual(
+      expectedBuffer,
+      receivedBuffer
+    );
   } catch {
     return false;
   }
 }
+
+// ==================================================
+// Browser request check
+// ==================================================
 
 function isAllowedBrowserRequest(req: Request) {
   const origin = req.headers.get("origin");
@@ -129,7 +170,14 @@ function isAllowedBrowserRequest(req: Request) {
   return true;
 }
 
-async function verifyTurnstile(token: string, ip: string) {
+// ==================================================
+// Cloudflare Turnstile
+// ==================================================
+
+async function verifyTurnstile(
+  token: string,
+  ip: string
+) {
   try {
     if (!token || !turnstileSecretKey) {
       return false;
@@ -137,11 +185,21 @@ async function verifyTurnstile(token: string, ip: string) {
 
     const formData = new URLSearchParams();
 
-    formData.append("secret", turnstileSecretKey);
-    formData.append("response", token);
+    formData.append(
+      "secret",
+      turnstileSecretKey
+    );
+
+    formData.append(
+      "response",
+      token
+    );
 
     if (ip && ip !== "unknown") {
-      formData.append("remoteip", ip);
+      formData.append(
+        "remoteip",
+        ip
+      );
     }
 
     const response = await fetch(
@@ -149,7 +207,8 @@ async function verifyTurnstile(token: string, ip: string) {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type":
+            "application/x-www-form-urlencoded",
         },
         body: formData.toString(),
         cache: "no-store",
@@ -157,7 +216,11 @@ async function verifyTurnstile(token: string, ip: string) {
     );
 
     if (!response.ok) {
-      console.error("TURNSTILE API ERROR:", response.status);
+      console.error(
+        "TURNSTILE API ERROR:",
+        response.status
+      );
+
       return false;
     }
 
@@ -178,39 +241,77 @@ async function verifyTurnstile(token: string, ip: string) {
       "www.198migration.com",
     ]);
 
-    if (result.hostname && !allowedHosts.has(result.hostname)) {
-      console.log("TURNSTILE HOSTNAME BLOCKED:", result.hostname);
+    if (
+      result.hostname &&
+      !allowedHosts.has(result.hostname)
+    ) {
+      console.log(
+        "TURNSTILE HOSTNAME BLOCKED:",
+        result.hostname
+      );
+
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error("TURNSTILE VERIFY ERROR:", error);
+    console.error(
+      "TURNSTILE VERIFY ERROR:",
+      error
+    );
+
     return false;
   }
 }
 
+// ==================================================
+// POST
+// ==================================================
+
 export async function POST(req: Request) {
   try {
-    if (!supabaseUrl || !serviceRoleKey || !turnstileSecretKey) {
-      console.error("Missing server environment variables");
+    // --------------------------------------------------
+    // Environment variables
+    // --------------------------------------------------
+
+    if (
+      !supabaseUrl ||
+      !serviceRoleKey ||
+      !turnstileSecretKey
+    ) {
+      console.error(
+        "Missing server environment variables"
+      );
 
       return NextResponse.json(
-        { error: "Server configuration error." },
-        { status: 500 }
+        {
+          error:
+            "Server configuration error.",
+        },
+        {
+          status: 500,
+        }
       );
     }
 
     const ip = getClientIp(req);
-    const userAgent = req.headers.get("user-agent") ?? "";
 
-    console.log("APPLICATION REQUEST IP:", ip);
+    const userAgent =
+      req.headers.get("user-agent") ?? "";
 
-    // --------------------------------------------------
+    console.log(
+      "APPLICATION REQUEST IP:",
+      ip
+    );
+
+    // ==================================================
     // Request log
-    // --------------------------------------------------
+    // ==================================================
 
-    const { data: logData, error: logError } = await supabaseAdmin
+    const {
+      data: logData,
+      error: logError,
+    } = await supabaseAdmin
       .from("application_request_logs")
       .insert({
         ip_address: ip,
@@ -221,81 +322,120 @@ export async function POST(req: Request) {
       .single();
 
     if (logError) {
-      console.error("REQUEST LOG INSERT FAILED:", {
-        message: logError.message,
-        details: logError.details,
-        hint: logError.hint,
-        code: logError.code,
-      });
+      console.error(
+        "REQUEST LOG INSERT FAILED:",
+        {
+          message: logError.message,
+          details: logError.details,
+          hint: logError.hint,
+          code: logError.code,
+        }
+      );
     } else {
-      console.log("REQUEST LOG SAVED:", logData);
-    }
-
-    // --------------------------------------------------
-    // Browser origin check
-    // --------------------------------------------------
-
-    if (!isAllowedBrowserRequest(req)) {
-      console.log("REQUEST ORIGIN BLOCKED:", ip);
-
-      return NextResponse.json(
-        { error: "Invalid request." },
-        { status: 403 }
+      console.log(
+        "REQUEST LOG SAVED:",
+        logData
       );
     }
 
-    // --------------------------------------------------
-    // Rate Limit
-    // Same IP: max 10 requests per 10 minutes
-    // --------------------------------------------------
+    // ==================================================
+    // Browser origin check
+    // ==================================================
 
-    const { data: rateAllowed, error: rateError } = await supabaseAdmin.rpc(
+    if (!isAllowedBrowserRequest(req)) {
+      console.log(
+        "REQUEST ORIGIN BLOCKED:",
+        ip
+      );
+
+      return NextResponse.json(
+        {
+          error: "Invalid request.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    // ==================================================
+    // Rate Limit
+    //
+    // Same IP:
+    // Maximum 2 requests per 1 hour
+    // ==================================================
+
+    const {
+      data: rateAllowed,
+      error: rateError,
+    } = await supabaseAdmin.rpc(
       "check_application_rate_limit",
       {
         p_key: `application:${ip}`,
-        p_limit: 10,
-        p_window_seconds: 600,
+        p_limit: 2,
+        p_window_seconds: 3600,
       }
     );
 
     if (rateError) {
-      console.error("RATE LIMIT ERROR:", rateError);
-
-      return NextResponse.json(
-        { error: "Unable to process request." },
-        { status: 500 }
+      console.error(
+        "RATE LIMIT ERROR:",
+        rateError
       );
-    }
-
-    if (rateAllowed !== true) {
-      console.log("RATE LIMITED IP:", ip);
 
       return NextResponse.json(
         {
           error:
-            "Too many applications. Please wait a few minutes and try again.",
+            "Unable to process request.",
         },
-        { status: 429 }
+        {
+          status: 500,
+        }
       );
     }
 
-    // --------------------------------------------------
+    if (rateAllowed !== true) {
+      console.log(
+        "RATE LIMITED IP:",
+        ip
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Too many applications. Please try again later.",
+        },
+        {
+          status: 429,
+        }
+      );
+    }
+
+    // ==================================================
     // Read request body
-    // --------------------------------------------------
+    // ==================================================
 
     const body = await req.json();
 
     const name =
-      typeof body.name === "string" ? body.name.trim() : "";
+      typeof body.name === "string"
+        ? body.name.trim()
+        : "";
 
     const server =
-      typeof body.server === "string" ? body.server.trim() : "";
+      typeof body.server === "string"
+        ? body.server.trim()
+        : "";
 
     const power =
-      typeof body.power === "string" ? body.power.trim() : "";
+      typeof body.power === "string"
+        ? body.power.trim()
+        : "";
 
     const alliance =
-      typeof body.alliance === "string" ? body.alliance.trim() : "";
+      typeof body.alliance === "string"
+        ? body.alliance.trim()
+        : "";
 
     const migrationGrade =
       typeof body.migration_grade === "string"
@@ -324,100 +464,163 @@ export async function POST(req: Request) {
         ? body.turnstile_token.trim()
         : "";
 
-    // --------------------------------------------------
+    // ==================================================
     // Honeypot
+    //
     // Humans never fill this field
-    // --------------------------------------------------
+    // ==================================================
 
     if (website) {
-      console.log("HONEYPOT BLOCKED:", {
-        ip,
-        website: website.slice(0, 100),
-      });
+      console.log(
+        "HONEYPOT BLOCKED:",
+        {
+          ip,
+          website:
+            website.slice(0, 100),
+        }
+      );
 
       return NextResponse.json(
-        { error: "Invalid application." },
-        { status: 400 }
+        {
+          error:
+            "Invalid application.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Signed form token
+    //
     // Blocks direct POSTs without loading the form
-    // --------------------------------------------------
+    // Minimum form time: 5 seconds
+    // ==================================================
 
-    if (!formToken || !verifyFormToken(formToken, ip)) {
-      console.log("FORM TOKEN BLOCKED:", ip);
+    if (
+      !formToken ||
+      !verifyFormToken(formToken, ip)
+    ) {
+      console.log(
+        "FORM TOKEN BLOCKED:",
+        ip
+      );
 
       return NextResponse.json(
-        { error: "Invalid application." },
-        { status: 403 }
+        {
+          error:
+            "Invalid application.",
+        },
+        {
+          status: 403,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Cloudflare Turnstile verification
-    // --------------------------------------------------
+    // ==================================================
 
     if (!turnstileToken) {
-      console.log("TURNSTILE TOKEN MISSING:", ip);
+      console.log(
+        "TURNSTILE TOKEN MISSING:",
+        ip
+      );
 
       return NextResponse.json(
-        { error: "Human verification required." },
-        { status: 403 }
+        {
+          error:
+            "Human verification required.",
+        },
+        {
+          status: 403,
+        }
       );
     }
 
-    const turnstileValid = await verifyTurnstile(
-      turnstileToken,
-      ip
-    );
+    const turnstileValid =
+      await verifyTurnstile(
+        turnstileToken,
+        ip
+      );
 
     if (!turnstileValid) {
-      console.log("TURNSTILE BLOCKED:", ip);
+      console.log(
+        "TURNSTILE BLOCKED:",
+        ip
+      );
 
       return NextResponse.json(
-        { error: "Human verification failed." },
-        { status: 403 }
+        {
+          error:
+            "Human verification failed.",
+        },
+        {
+          status: 403,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Name validation
-    // --------------------------------------------------
+    // ==================================================
 
-    if (!name || name.length > 40) {
+    if (
+      !name ||
+      name.length > 40
+    ) {
       return NextResponse.json(
-        { error: "Invalid name." },
-        { status: 400 }
+        {
+          error: "Invalid name.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // Known spam-name format:
+    // --------------------------------------------------
+    // Known spam-name formats:
+    //
     // Apex_522539744
     // Titan_650481461
     // Frost_684445496
+    // --------------------------------------------------
 
-    const spamNamePattern = /^[A-Za-z]+_[0-9]{6,12}$/;
+    const spamNamePattern =
+      /^[A-Za-z]+_[0-9]{6,12}$/;
 
-    if (spamNamePattern.test(name)) {
-      console.log("SPAM NAME BLOCKED:", {
-        ip,
-        name,
-      });
+    if (
+      spamNamePattern.test(name)
+    ) {
+      console.log(
+        "SPAM NAME BLOCKED:",
+        {
+          ip,
+          name,
+        }
+      );
 
       return NextResponse.json(
-        { error: "Invalid application." },
-        { status: 400 }
+        {
+          error:
+            "Invalid application.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Server validation
+    //
     // Server range: 194 ~ 256
-    // --------------------------------------------------
+    // ==================================================
 
-    const serverNumber = Number(server);
+    const serverNumber =
+      Number(server);
 
     if (
       !/^\d{3}$/.test(server) ||
@@ -425,95 +628,214 @@ export async function POST(req: Request) {
       serverNumber < 194 ||
       serverNumber > 256
     ) {
-      console.log("INVALID SERVER BLOCKED:", {
-        ip,
-        server,
-      });
+      console.log(
+        "INVALID SERVER BLOCKED:",
+        {
+          ip,
+          server,
+        }
+      );
 
       return NextResponse.json(
-        { error: "Server must be between 194 and 256." },
-        { status: 400 }
+        {
+          error:
+            "Server must be between 194 and 256.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // 1st Army Power
-    // Maximum: 500,000,000
-    // --------------------------------------------------
-
-    if (!power || power.length > 30) {
-      return NextResponse.json(
-        { error: "Invalid power." },
-        { status: 400 }
-      );
-    }
-
-    // Remove commas/spaces before converting to number
-    const normalizedPower = power.replace(/[,\s]/g, "");
-    const powerNumber = Number(normalizedPower);
+    //
+    // Maximum:
+    // 500,000,000
+    // ==================================================
 
     if (
-      !/^\d+$/.test(normalizedPower) ||
-      !Number.isFinite(powerNumber) ||
+      !power ||
+      power.length > 30
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid power.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // Allow:
+    // 500000000
+    // 500,000,000
+    // spaces are removed as well
+
+    const normalizedPower =
+      power.replace(/[,\s]/g, "");
+
+    const powerNumber =
+      Number(normalizedPower);
+
+    if (
+      !/^\d+$/.test(
+        normalizedPower
+      ) ||
+      !Number.isFinite(
+        powerNumber
+      ) ||
       powerNumber <= 0 ||
       powerNumber > 500000000
     ) {
-      console.log("INVALID POWER BLOCKED:", {
-        ip,
-        power,
-      });
+      console.log(
+        "INVALID POWER BLOCKED:",
+        {
+          ip,
+          power,
+        }
+      );
 
       return NextResponse.json(
-        { error: "Power must be 500,000,000 or less." },
-        { status: 400 }
+        {
+          error:
+            "Power must be 500,000,000 or less.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Alliance
-    // --------------------------------------------------
+    // ==================================================
 
-    if (alliance.length > 30) {
+    if (
+      alliance.length > 30
+    ) {
       return NextResponse.json(
-        { error: "Invalid alliance." },
-        { status: 400 }
+        {
+          error:
+            "Invalid alliance.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Migration grade
-    // --------------------------------------------------
+    // ==================================================
 
-    if (!VALID_GRADES.includes(migrationGrade)) {
+    if (
+      !VALID_GRADES.includes(
+        migrationGrade
+      )
+    ) {
       return NextResponse.json(
-        { error: "Invalid migration grade." },
-        { status: 400 }
+        {
+          error:
+            "Invalid migration grade.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Message
-    // --------------------------------------------------
+    // ==================================================
 
-    if (message.length > 1000) {
+    if (
+      message.length > 1000
+    ) {
       return NextResponse.json(
-        { error: "Message is too long." },
-        { status: 400 }
+        {
+          error:
+            "Message is too long.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // --------------------------------------------------
-    // Save validated application
-    // --------------------------------------------------
+    // ==================================================
+    // Duplicate application protection
+    //
+    // Same server + same nickname
+    // cannot submit again
+    // ==================================================
 
-    const { error: applicationError } = await supabaseAdmin
+    const {
+      data: duplicateApplication,
+      error: duplicateError,
+    } = await supabaseAdmin
+      .from("applications")
+      .select("id")
+      .eq("server", server)
+      .ilike("name", name)
+      .limit(1)
+      .maybeSingle();
+
+    if (duplicateError) {
+      console.error(
+        "DUPLICATE CHECK ERROR:",
+        duplicateError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Unable to process request.",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    if (duplicateApplication) {
+      console.log(
+        "DUPLICATE APPLICATION BLOCKED:",
+        {
+          ip,
+          server,
+          name,
+        }
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "This player has already submitted an application.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    // ==================================================
+    // Save validated application
+    // ==================================================
+
+    const {
+      error: applicationError,
+    } = await supabaseAdmin
       .from("applications")
       .insert({
         name,
         server,
         power,
         alliance,
-        migration_grade: migrationGrade,
+        migration_grade:
+          migrationGrade,
         message,
         t10,
       });
@@ -525,26 +847,45 @@ export async function POST(req: Request) {
       );
 
       return NextResponse.json(
-        { error: "Failed to submit application." },
-        { status: 500 }
+        {
+          error:
+            "Failed to submit application.",
+        },
+        {
+          status: 500,
+        }
       );
     }
 
-    console.log("APPLICATION SAVED FROM IP:", ip);
+    console.log(
+      "APPLICATION SAVED FROM IP:",
+      ip
+    );
 
     return NextResponse.json(
       {
         success: true,
-        message: "Application submitted successfully.",
+        message:
+          "Application submitted successfully.",
       },
-      { status: 200 }
+      {
+        status: 200,
+      }
     );
   } catch (error) {
-    console.error("APPLICATION API ERROR:", error);
+    console.error(
+      "APPLICATION API ERROR:",
+      error
+    );
 
     return NextResponse.json(
-      { error: "Invalid request." },
-      { status: 400 }
+      {
+        error:
+          "Invalid request.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 }
