@@ -438,11 +438,33 @@ export async function POST(req: Request) {
 
     // --------------------------------------------------
     // 1st Army Power
+    // Maximum: 500,000,000
     // --------------------------------------------------
 
     if (!power || power.length > 30) {
       return NextResponse.json(
         { error: "Invalid power." },
+        { status: 400 }
+      );
+    }
+
+    // Remove commas/spaces before converting to number
+    const normalizedPower = power.replace(/[,\s]/g, "");
+    const powerNumber = Number(normalizedPower);
+
+    if (
+      !/^\d+$/.test(normalizedPower) ||
+      !Number.isFinite(powerNumber) ||
+      powerNumber <= 0 ||
+      powerNumber > 500000000
+    ) {
+      console.log("INVALID POWER BLOCKED:", {
+        ip,
+        power,
+      });
+
+      return NextResponse.json(
+        { error: "Power must be 500,000,000 or less." },
         { status: 400 }
       );
     }
