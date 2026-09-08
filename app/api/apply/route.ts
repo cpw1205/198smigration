@@ -4,6 +4,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY!;
 
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
   auth: {
@@ -95,13 +96,18 @@ function isAllowedBrowserRequest(req: Request) {
     "198migration.com",
   ]);
 
-  if (secFetchSite && secFetchSite !== "same-origin" && secFetchSite !== "same-site") {
+  if (
+    secFetchSite &&
+    secFetchSite !== "same-origin" &&
+    secFetchSite !== "same-site"
+  ) {
     return false;
   }
 
   if (origin) {
     try {
       const host = new URL(origin).hostname;
+
       if (!allowedHosts.has(host)) {
         return false;
       }
@@ -111,6 +117,7 @@ function isAllowedBrowserRequest(req: Request) {
   } else if (referer) {
     try {
       const host = new URL(referer).hostname;
+
       if (!allowedHosts.has(host)) {
         return false;
       }
@@ -122,10 +129,71 @@ function isAllowedBrowserRequest(req: Request) {
   return true;
 }
 
+async function verifyTurnstile(token: string, ip: string) {
+  try {
+    if (!token || !turnstileSecretKey) {
+      return false;
+    }
+
+    const formData = new URLSearchParams();
+
+    formData.append("secret", turnstileSecretKey);
+    formData.append("response", token);
+
+    if (ip && ip !== "unknown") {
+      formData.append("remoteip", ip);
+    }
+
+    const response = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      console.error("TURNSTILE API ERROR:", response.status);
+      return false;
+    }
+
+    const result = await response.json();
+
+    console.log("TURNSTILE RESULT:", {
+      success: result.success,
+      hostname: result.hostname,
+      errors: result["error-codes"],
+    });
+
+    if (result.success !== true) {
+      return false;
+    }
+
+    const allowedHosts = new Set([
+      "198migration.com",
+      "www.198migration.com",
+    ]);
+
+    if (result.hostname && !allowedHosts.has(result.hostname)) {
+      console.log("TURNSTILE HOSTNAME BLOCKED:", result.hostname);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("TURNSTILE VERIFY ERROR:", error);
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    if (!supabaseUrl || !serviceRoleKey) {
-      console.error("Missing Supabase environment variables");
+    if (!supabaseUrl || !serviceRoleKey || !turnstileSecretKey) {
+      console.error("Missing server environment variables");
 
       return NextResponse.json(
         { error: "Server configuration error." },
@@ -138,7 +206,10 @@ export async function POST(req: Request) {
 
     console.log("APPLICATION REQUEST IP:", ip);
 
+    // --------------------------------------------------
     // Request log
+    // --------------------------------------------------
+
     const { data: logData, error: logError } = await supabaseAdmin
       .from("application_request_logs")
       .insert({
@@ -160,7 +231,10 @@ export async function POST(req: Request) {
       console.log("REQUEST LOG SAVED:", logData);
     }
 
-    // Basic browser-origin check
+    // --------------------------------------------------
+    // Browser origin check
+    // --------------------------------------------------
+
     if (!isAllowedBrowserRequest(req)) {
       console.log("REQUEST ORIGIN BLOCKED:", ip);
 
@@ -170,7 +244,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Rate Limit: same IP, max 10 requests per 10 minutes
+    // --------------------------------------------------
+    // Rate Limit
+    // Same IP: max 10 requests per 10 minutes
+    // --------------------------------------------------
+
     const { data: rateAllowed, error: rateError } = await supabaseAdmin.rpc(
       "check_application_rate_limit",
       {
@@ -201,6 +279,10 @@ export async function POST(req: Request) {
       );
     }
 
+    // --------------------------------------------------
+    // Read request body
+    // --------------------------------------------------
+
     const body = await req.json();
 
     const name =
@@ -221,17 +303,32 @@ export async function POST(req: Request) {
         : "";
 
     const message =
-      typeof body.message === "string" ? body.message.trim() : "";
+      typeof body.message === "string"
+        ? body.message.trim()
+        : "";
 
     const t10 = body.t10 === true;
 
     const formToken =
-      typeof body.form_token === "string" ? body.form_token.trim() : "";
+      typeof body.form_token === "string"
+        ? body.form_token.trim()
+        : "";
 
     const website =
-      typeof body.website === "string" ? body.website.trim() : "";
+      typeof body.website === "string"
+        ? body.website.trim()
+        : "";
 
-    // Honeypot: humans never fill this.
+    const turnstileToken =
+      typeof body.turnstile_token === "string"
+        ? body.turnstile_token.trim()
+        : "";
+
+    // --------------------------------------------------
+    // Honeypot
+    // Humans never fill this field
+    // --------------------------------------------------
+
     if (website) {
       console.log("HONEYPOT BLOCKED:", {
         ip,
@@ -244,7 +341,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Signed form token: blocks direct POSTs that did not load the real form.
+    // --------------------------------------------------
+    // Signed form token
+    // Blocks direct POSTs without loading the form
+    // --------------------------------------------------
+
     if (!formToken || !verifyFormToken(formToken, ip)) {
       console.log("FORM TOKEN BLOCKED:", ip);
 
@@ -254,7 +355,37 @@ export async function POST(req: Request) {
       );
     }
 
+    // --------------------------------------------------
+    // Cloudflare Turnstile verification
+    // --------------------------------------------------
+
+    if (!turnstileToken) {
+      console.log("TURNSTILE TOKEN MISSING:", ip);
+
+      return NextResponse.json(
+        { error: "Human verification required." },
+        { status: 403 }
+      );
+    }
+
+    const turnstileValid = await verifyTurnstile(
+      turnstileToken,
+      ip
+    );
+
+    if (!turnstileValid) {
+      console.log("TURNSTILE BLOCKED:", ip);
+
+      return NextResponse.json(
+        { error: "Human verification failed." },
+        { status: 403 }
+      );
+    }
+
+    // --------------------------------------------------
     // Name validation
+    // --------------------------------------------------
+
     if (!name || name.length > 40) {
       return NextResponse.json(
         { error: "Invalid name." },
@@ -263,7 +394,10 @@ export async function POST(req: Request) {
     }
 
     // Known spam-name format:
-    // Apex_522539744 / Titan_650481461 / Frost_684445496
+    // Apex_522539744
+    // Titan_650481461
+    // Frost_684445496
+
     const spamNamePattern = /^[A-Za-z]+_[0-9]{6,12}$/;
 
     if (spamNamePattern.test(name)) {
@@ -278,7 +412,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Server range: 194 ~ 256 only
+    // --------------------------------------------------
+    // Server validation
+    // Server range: 194 ~ 256
+    // --------------------------------------------------
+
     const serverNumber = Number(server);
 
     if (
@@ -298,7 +436,10 @@ export async function POST(req: Request) {
       );
     }
 
+    // --------------------------------------------------
     // 1st Army Power
+    // --------------------------------------------------
+
     if (!power || power.length > 30) {
       return NextResponse.json(
         { error: "Invalid power." },
@@ -306,7 +447,10 @@ export async function POST(req: Request) {
       );
     }
 
+    // --------------------------------------------------
     // Alliance
+    // --------------------------------------------------
+
     if (alliance.length > 30) {
       return NextResponse.json(
         { error: "Invalid alliance." },
@@ -314,7 +458,10 @@ export async function POST(req: Request) {
       );
     }
 
+    // --------------------------------------------------
     // Migration grade
+    // --------------------------------------------------
+
     if (!VALID_GRADES.includes(migrationGrade)) {
       return NextResponse.json(
         { error: "Invalid migration grade." },
@@ -322,7 +469,10 @@ export async function POST(req: Request) {
       );
     }
 
+    // --------------------------------------------------
     // Message
+    // --------------------------------------------------
+
     if (message.length > 1000) {
       return NextResponse.json(
         { error: "Message is too long." },
@@ -330,7 +480,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Save only validated applications
+    // --------------------------------------------------
+    // Save validated application
+    // --------------------------------------------------
+
     const { error: applicationError } = await supabaseAdmin
       .from("applications")
       .insert({
@@ -344,7 +497,10 @@ export async function POST(req: Request) {
       });
 
     if (applicationError) {
-      console.error("APPLICATION INSERT ERROR:", applicationError);
+      console.error(
+        "APPLICATION INSERT ERROR:",
+        applicationError
+      );
 
       return NextResponse.json(
         { error: "Failed to submit application." },
