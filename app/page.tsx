@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const [lang, setLang] = useState<"en" | "ko">("en");
@@ -17,6 +17,7 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<HTMLDivElement | null>(null);
   // Anti-bot protection
   const [formToken, setFormToken] = useState("");
   const [honeypot, setHoneypot] = useState("");
@@ -46,17 +47,82 @@ export default function Home() {
   useEffect(() => {
     loadFormToken();
   }, []);
-useEffect(() => {
-  const script = document.createElement("script");
-  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-  script.async = true;
-  script.defer = true;
-  document.head.appendChild(script);
+  useEffect(() => {
+    let widgetId: string | undefined;
+    let cancelled = false;
 
-  return () => {
-    document.head.removeChild(script);
-  };
-}, []);
+    type TurnstileApi = {
+      render: (
+        container: HTMLElement,
+        options: {
+          sitekey: string;
+          callback: (token: string) => void;
+          "expired-callback": () => void;
+          "error-callback": () => void;
+          theme?: "auto" | "light" | "dark";
+        }
+      ) => string;
+      remove: (widgetId: string) => void;
+    };
+
+    const getTurnstile = () =>
+      (
+        window as typeof window & {
+          turnstile?: TurnstileApi;
+        }
+      ).turnstile;
+
+    const renderTurnstile = () => {
+      if (cancelled || !turnstileRef.current) return;
+
+      const turnstile = getTurnstile();
+      const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+      if (!turnstile || !siteKey) {
+        console.error("Turnstile is not ready or site key is missing.");
+        return;
+      }
+
+      widgetId = turnstile.render(turnstileRef.current, {
+        sitekey: siteKey,
+        callback: (token: string) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => setTurnstileToken(""),
+        theme: "dark",
+      });
+    };
+
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      'script[src^="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
+    );
+
+    if (getTurnstile()) {
+      renderTurnstile();
+    } else if (existingScript) {
+      existingScript.addEventListener("load", renderTurnstile, { once: true });
+    } else {
+      const script = document.createElement("script");
+      script.src =
+        "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.addEventListener("load", renderTurnstile, { once: true });
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+
+      const turnstile = getTurnstile();
+      if (turnstile && widgetId) {
+        try {
+          turnstile.remove(widgetId);
+        } catch {
+          // Ignore cleanup errors.
+        }
+      }
+    };
+  }, []);
   
   const [popup, setPopup] = useState<{
     show: boolean;
@@ -292,6 +358,7 @@ if (!turnstileToken) {
       });
 
       setHoneypot("");
+      setTurnstileToken("");
       await loadFormToken();
     } catch (error) {
       console.error("Application submission error:", error);
@@ -720,13 +787,9 @@ if (!turnstileToken) {
             value={form.message}
             onChange={handleChange}
           />
-<div
-  className="cf-turnstile"
-  data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-  data-callback={(token: string) => setTurnstileToken(token)}
-  data-expired-callback={() => setTurnstileToken("")}
-  data-error-callback={() => setTurnstileToken("")}
-/>
+          <div className="turnstileBox">
+            <div ref={turnstileRef} />
+          </div>
           <button
             type="submit"
             disabled={loading}
@@ -1793,6 +1856,12 @@ if (!turnstileToken) {
 
           resize:
             vertical;
+        }
+
+        .turnstileBox {
+          display: flex;
+          justify-content: center;
+          min-height: 65px;
         }
 
         .submitButton {
