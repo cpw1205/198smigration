@@ -16,7 +16,7 @@ export default function Home() {
   });
 
   const [loading, setLoading] = useState(false);
-
+  const [turnstileToken, setTurnstileToken] = useState("");
   // Anti-bot protection
   const [formToken, setFormToken] = useState("");
   const [honeypot, setHoneypot] = useState("");
@@ -46,7 +46,18 @@ export default function Home() {
   useEffect(() => {
     loadFormToken();
   }, []);
+useEffect(() => {
+  const script = document.createElement("script");
+  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+  script.async = true;
+  script.defer = true;
+  document.head.appendChild(script);
 
+  return () => {
+    document.head.removeChild(script);
+  };
+}, []);
+  
   const [popup, setPopup] = useState<{
     show: boolean;
     type: "success" | "error";
@@ -229,7 +240,15 @@ export default function Home() {
       await loadFormToken();
       return;
     }
-
+if (!turnstileToken) {
+  showPopup(
+    "error",
+    lang === "ko"
+      ? "사람 인증을 완료해주세요."
+      : "Please complete the human verification."
+  );
+  return;
+}
     setLoading(true);
 
     try {
@@ -248,6 +267,7 @@ export default function Home() {
           message: form.message,
           form_token: formToken,
           website: honeypot,
+          turnstile_token: turnstileToken,
         }),
       });
 
@@ -700,7 +720,13 @@ export default function Home() {
             value={form.message}
             onChange={handleChange}
           />
-
+<div
+  className="cf-turnstile"
+  data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+  data-callback={(token: string) => setTurnstileToken(token)}
+  data-expired-callback={() => setTurnstileToken("")}
+  data-error-callback={() => setTurnstileToken("")}
+/>
           <button
             type="submit"
             disabled={loading}
